@@ -25,13 +25,7 @@ export default function LoginPage() {
       const success = await login(formData.usernameOrEmail, formData.password)
       
       if (success) {
-        // Check if user is admin
-        const userEmail = localStorage.getItem('userEmail')
-        if (userEmail === 'eminoviaslan@gmail.com') {
-          router.push('/admin')
-        } else {
-          router.push('/')
-        }
+        router.push('/')
       } else {
         setError('Invalid username/email or password.')
       }
@@ -64,13 +58,16 @@ export default function LoginPage() {
         {/* Login Card */}
         <div className="card">
           <div className="card-content">
-            {error && (
-              <div className="alert alert-error">
-                {error}
-              </div>
-            )}
+            {/* Error Message - Fixed height container to prevent layout shift */}
+            <div className="mb-4" style={{ minHeight: error ? '60px' : '0px' }}>
+              {error && (
+                <div className="alert alert-error">
+                  {error}
+                </div>
+              )}
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="usernameOrEmail" className="block text-sm font-medium text-gray-700 mb-2">
                   Username or Email
@@ -113,13 +110,15 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <button 
-                type="submit" 
-                className="btn btn-primary w-full" 
-                disabled={loading}
-              >
-                {loading ? 'Signing in...' : 'Sign In'}
-              </button>
+              <div className="pt-2">
+                <button 
+                  type="submit" 
+                  className="btn btn-primary w-full" 
+                  disabled={loading}
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </div>
             </form>
 
             <div className="mt-6 text-center border-t pt-6">

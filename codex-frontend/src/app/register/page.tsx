@@ -51,7 +51,7 @@ export default function RegisterPage() {
       if (success) {
         setSuccess(true)
         setTimeout(() => {
-          router.push('/login')
+          router.push('/')
         }, 2000)
       } else {
         setError('Registration failed. Please try again.')
@@ -84,7 +84,7 @@ export default function RegisterPage() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created!</h2>
               <p className="text-gray-600 mb-4">Your account has been successfully created.</p>
-              <p className="text-sm text-gray-500">Redirecting to login...</p>
+              <p className="text-sm text-gray-500">Redirecting to homepage...</p>
             </div>
           </div>
         </div>
@@ -107,11 +107,14 @@ export default function RegisterPage() {
         {/* Register Card */}
         <div className="card">
           <div className="card-content">
-            {error && (
-              <div className="alert alert-error">
-                {error}
-              </div>
-            )}
+            {/* Error Message - Fixed height container to prevent layout shift */}
+            <div className="mb-4" style={{ minHeight: error ? '60px' : '0px' }}>
+              {error && (
+                <div className="alert alert-error">
+                  {error}
+                </div>
+              )}
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -211,13 +214,15 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <button 
-                type="submit" 
-                className="btn btn-primary w-full" 
-                disabled={loading}
-              >
-                {loading ? 'Creating account...' : 'Create Account'}
-              </button>
+              <div className="pt-2">
+                <button 
+                  type="submit" 
+                  className="btn btn-primary w-full" 
+                  disabled={loading}
+                >
+                  {loading ? 'Creating account...' : 'Create Account'}
+                </button>
+              </div>
             </form>
 
             <div className="mt-6 text-center border-t pt-6">
