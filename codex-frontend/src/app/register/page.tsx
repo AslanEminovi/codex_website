@@ -107,16 +107,15 @@ export default function RegisterPage() {
         {/* Register Card */}
         <div className="card">
           <div className="card-content">
-            {/* Error Message - Fixed height container to prevent layout shift */}
-            <div className="mb-4" style={{ minHeight: error ? '60px' : '0px' }}>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error Message */}
               {error && (
                 <div className="alert alert-error">
                   {error}
                 </div>
               )}
-            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -214,15 +213,13 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <div className="pt-2">
-                <button 
-                  type="submit" 
-                  className="btn btn-primary w-full" 
-                  disabled={loading}
-                >
-                  {loading ? 'Creating account...' : 'Create Account'}
-                </button>
-              </div>
+              <button 
+                type="submit" 
+                className="btn btn-primary w-full" 
+                disabled={loading}
+              >
+                {loading ? 'Creating account...' : 'Create Account'}
+              </button>
             </form>
 
             <div className="mt-6 text-center border-t pt-6">
