@@ -45,7 +45,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-xl">
+      <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-bold text-gray-900 mb-4 block">
@@ -55,14 +55,14 @@ export default function LoginPage() {
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
-        {/* Login Card - MUCH BIGGER CONTAINER */}
+        {/* Login Card */}
         <div className="card">
-          <div className="card-content" style={{ minHeight: '650px', padding: '4rem 3rem' }}>
+          <div className="card-content">
             
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Error Message */}
               {error && (
-                <div className="alert alert-error mb-8">
+                <div className="alert alert-error">
                   {error}
                 </div>
               )}
@@ -109,13 +109,11 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              {/* Buttons Container - MUCH MORE SPACE */}
-              <div className="space-y-6 pt-8">
+              <div className="space-y-4">
                 <button 
                   type="submit" 
                   className="btn btn-primary w-full" 
                   disabled={loading}
-                  style={{ minHeight: '60px', fontSize: '1.1rem' }}
                 >
                   {loading ? 'Signing in...' : 'Sign In'}
                 </button>
@@ -123,14 +121,13 @@ export default function LoginPage() {
                 <Link 
                   href="/register"
                   className="btn btn-secondary w-full block text-center"
-                  style={{ minHeight: '60px', lineHeight: '60px', fontSize: '1.1rem' }}
                 >
                   Create New Account
                 </Link>
               </div>
             </form>
 
-            <div className="mt-12 text-center border-t pt-8">
+            <div className="mt-6 text-center border-t pt-6">
               <p className="text-sm text-gray-600">
                 Need help? Contact support or{' '}
                 <Link href="/" className="font-medium text-gray-900 hover:text-gray-700">
