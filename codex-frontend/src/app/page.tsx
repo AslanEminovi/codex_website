@@ -49,6 +49,9 @@ export default function HomePage() {
             <div className="hidden md-flex items-center gap-8">
               <Link href="/" className="nav-link">Home</Link>
               <Link href="/blog" className="nav-link">Blog</Link>
+              {user && (
+                <Link href="/create-post" className="nav-link">Create Post</Link>
+              )}
               {user ? (
                 <>
                   {isAdmin && (

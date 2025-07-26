@@ -53,6 +53,7 @@ export default function BlogPage() {
             <div className="hidden md-flex items-center gap-8">
               <Link href="/" className="nav-link">Home</Link>
               <Link href="/blog" className="nav-link">Blog</Link>
+              <Link href="/create-post" className="nav-link">Create Post</Link>
               <Link href="/login" className="btn btn-primary">Login</Link>
             </div>
           </div>

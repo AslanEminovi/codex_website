@@ -182,6 +182,10 @@ class ApiClient {
     return this.request<Post>(`/posts/slug/${slug}`)
   }
 
+  async getPostById(id: number): Promise<Post> {
+    return this.request<Post>(`/posts/${id}`)
+  }
+
   async getFeaturedPosts(limit = 5): Promise<ApiResponse<Post[]>> {
     return this.request<ApiResponse<Post[]>>(`/posts/featured?limit=${limit}`)
   }
