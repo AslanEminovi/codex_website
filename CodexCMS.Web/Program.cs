@@ -8,6 +8,10 @@ using CodexCMS.Web.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure port for Railway deployment
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -67,16 +71,22 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Add logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    // Remove HSTS for Railway deployment
+    // app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Remove HTTPS redirection for Railway
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -94,14 +104,36 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// Add health check endpoint
+app.MapGet("/health", () => "OK");
+
 // Ensure database is created
-using (var scope = app.Services.CreateScope())
+try
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    context.Database.EnsureCreated();
-    
-    // Seed initial data
-    await SeedData.InitializeAsync(context);
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        // Ensure data directory exists
+        var dataDir = Path.GetDirectoryName(context.Database.GetConnectionString());
+        if (!string.IsNullOrEmpty(dataDir) && !Directory.Exists(dataDir))
+        {
+            Directory.CreateDirectory(dataDir);
+        }
+        
+        context.Database.EnsureCreated();
+        
+        // Seed initial data
+        await SeedData.InitializeAsync(context);
+        
+        Console.WriteLine("Database initialized successfully");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Database initialization failed: {ex.Message}");
+    Console.WriteLine($"Stack trace: {ex.StackTrace}");
 }
 
+Console.WriteLine($"Application starting on port {port}");
 app.Run(); 
