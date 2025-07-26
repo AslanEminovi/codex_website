@@ -21,7 +21,11 @@ namespace CodexCMS.API.Controllers
         {
             try
             {
+                Console.WriteLine($"🔵 Login attempt: {request.UsernameOrEmail}");
+                
                 var result = await _authService.LoginAsync(request.UsernameOrEmail, request.Password);
+                
+                Console.WriteLine($"🔵 Login result: success={result.success}, token length={result.token?.Length ?? 0}");
                 
                 if (result.success)
                 {
@@ -41,10 +45,13 @@ namespace CodexCMS.API.Controllers
                     });
                 }
 
+                Console.WriteLine($"🔴 Login failed: {result.token}");
                 return BadRequest(new { success = false, message = "Invalid username/email or password." });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"🔴 Login exception: {ex.Message}");
+                Console.WriteLine($"🔴 Login stack trace: {ex.StackTrace}");
                 return StatusCode(500, new { success = false, message = "An error occurred during login." });
             }
         }
