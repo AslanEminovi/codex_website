@@ -149,7 +149,7 @@ export default function HomePage() {
       {/* Navigation */}
       <nav className="nav">
         <div className="container">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-gray-900">
               CodexCMS
             </Link>
@@ -175,13 +175,13 @@ export default function HomePage() {
       <section className="section">
         <div className="container">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
               Modern Content Management
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
               Create, manage, and publish your content with our clean and simple CMS platform.
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
               <Link href="/blog" className="btn btn-primary">
                 Read Our Blog
               </Link>
@@ -201,7 +201,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
             Latest Posts
           </h2>
-          <div className="grid md-grid-cols-3 gap-8">
+          <div className="grid md-grid-cols-3 gap-8 lg:gap-12">
             {blogPosts.map((post) => (
               <article key={post.id} className="card">
                 <Image
