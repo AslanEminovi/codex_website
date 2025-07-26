@@ -4,9 +4,26 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 
+interface Post {
+  id: number
+  title: string
+  status: string
+  author: string
+  date: string
+  views: number
+}
+
+interface User {
+  id: number
+  username: string
+  email: string
+  role: string
+  status: string
+}
+
 export default function AdminDashboard() {
-  const [posts, setPosts] = useState<any[]>([])
-  const [users, setUsers] = useState<any[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
 

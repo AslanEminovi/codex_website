@@ -5,8 +5,26 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { api } from '@/lib/api'
 
+interface BlogPost {
+  id: number
+  title: string
+  slug: string
+  excerpt: string
+  featuredImageUrl?: string
+  publishedAt?: string
+  createdAt?: string
+  updatedAt?: string
+  author?: {
+    firstName?: string
+    lastName?: string
+  }
+  category?: {
+    name?: string
+  }
+}
+
 export default function BlogPage() {
-  const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 

@@ -6,9 +6,23 @@ import Image from 'next/image'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 
+interface BlogPost {
+  id: number
+  title: string
+  slug: string
+  excerpt: string
+  imageUrl?: string
+  featuredImageUrl?: string
+  date?: string
+  createdAt?: string
+  publishedAt?: string
+  author: string
+  category: string
+}
+
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
-  const [posts, setPosts] = useState<any[]>([])
+  const [posts, setPosts] = useState<BlogPost[]>([])
   const { user, isAdmin, loading, logout } = useAuth()
 
   useEffect(() => {
@@ -100,9 +114,9 @@ export default function HomePage() {
                       <div className="grid md-grid-cols-3 gap-8 lg:gap-12">
               {posts.map((post) => (
               <article key={post.id} className="card">
-                <Image
-                  src={post.imageUrl}
-                  alt={post.title}
+                                  <Image
+                    src={post.imageUrl || post.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
+                    alt={post.title}
                   width={400}
                   height={240}
                   className="w-full h-48 object-cover"

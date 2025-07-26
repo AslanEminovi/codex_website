@@ -6,10 +6,25 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { api } from '@/lib/api'
 
+interface BlogPost {
+  id: number
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  imageUrl?: string
+  featuredImageUrl?: string
+  date?: string
+  createdAt?: string
+  publishedAt?: string
+  author: string
+  category: string
+}
+
 export default function BlogPost() {
   const params = useParams()
-  const [post, setPost] = useState<any | null>(null)
-  const [allPosts, setAllPosts] = useState<any[]>([])
+  const [post, setPost] = useState<BlogPost | null>(null)
+  const [allPosts, setAllPosts] = useState<BlogPost[]>([])
 
   useEffect(() => {
     const slug = params?.slug as string
