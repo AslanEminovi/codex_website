@@ -127,7 +127,8 @@ builder.Services.AddCors(options =>
             {
                 "https://codex-cms.vercel.app",
                 "https://codexcms.vercel.app",
-                "https://codex-website.vercel.app"
+                "https://codex-website.vercel.app",
+                "https://codex-website-one.vercel.app"
             };
             
             return allowedDomains.Contains(origin);
@@ -156,22 +157,37 @@ builder.Logging.AddConsole();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Always enable Swagger for debugging
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "CodexCMS API V1");
-        c.RoutePrefix = string.Empty; // Makes Swagger available at root
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "CodexCMS API V1");
+    c.RoutePrefix = string.Empty; // Makes Swagger available at root
+});
 
 // Enable CORS
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Debug endpoints
+app.MapGet("/debug/routes", () =>
+{
+    return Results.Ok(new
+    {
+        message = "API is running",
+        environment = app.Environment.EnvironmentName,
+        routes = new[]
+        {
+            "/api/auth/login",
+            "/api/auth/register", 
+            "/api/posts",
+            "/health",
+            "/init-db"
+        }
+    });
+});
 
 app.MapControllers();
 
