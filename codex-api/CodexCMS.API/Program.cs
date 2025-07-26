@@ -56,33 +56,41 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Database configuration
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(connectionString))
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrEmpty(connectionString))
 {
-    // Use Railway PostgreSQL if available, otherwise SQLite for development
-    connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-    
-    if (!string.IsNullOrEmpty(connectionString))
+    // Parse Railway PostgreSQL URL: postgresql://user:password@host:port/database
+    try
     {
-        // Convert Railway DATABASE_URL format to connection string
         var uri = new Uri(connectionString);
-        connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.LocalPath.TrimStart('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Require;Trust Server Certificate=true;";
+        var host = uri.Host;
+        var port = uri.Port;
+        var database = uri.AbsolutePath.TrimStart('/');
+        var userInfo = uri.UserInfo.Split(':');
+        var username = userInfo[0];
+        var password = userInfo.Length > 1 ? userInfo[1] : "";
+        
+        var postgresConnectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
         
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(postgresConnectionString));
+            
+        Console.WriteLine($"🔗 Using PostgreSQL: Host={host}, Database={database}");
     }
-    else
+    catch (Exception ex)
     {
-        // Fallback to SQLite for development
-        connectionString = "Data Source=codexcms.db";
+        Console.WriteLine($"❌ Failed to parse DATABASE_URL: {ex.Message}");
+        // Fallback to SQLite
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(connectionString));
+            options.UseSqlite("Data Source=codexcms.db"));
     }
 }
 else
 {
+    // Fallback to SQLite for development
+    Console.WriteLine("📁 Using SQLite fallback");
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlite(connectionString));
+        options.UseSqlite("Data Source=codexcms.db"));
 }
 
 // JWT Configuration
