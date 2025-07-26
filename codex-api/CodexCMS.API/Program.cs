@@ -212,62 +212,50 @@ app.MapGet("/init-db", async (ApplicationDbContext context, ILogger<Program> log
     }
 });
 
-// Database initialization and seed data
+// Database initialization
 Task.Run(async () =>
 {
-    await Task.Delay(5000); // Wait 5 seconds for app to start
-    
-    using var scope = app.Services.CreateScope();
-    try
+    try 
     {
+        await Task.Delay(5000); // Wait for app to start
+        Console.WriteLine("🚀 Starting database initialization...");
+        
+        using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         
-        logger.LogInformation("🚀 Starting database initialization...");
-        
-        // Check if we can connect
+        // Test connection
         var canConnect = await context.Database.CanConnectAsync();
-        logger.LogInformation($"📡 Can connect to database: {canConnect}");
+        Console.WriteLine($"📡 Can connect to database: {canConnect}");
         
-        if (canConnect)
+        if (!canConnect)
         {
-            // Ensure database is created
-            var created = await context.Database.EnsureCreatedAsync();
-            logger.LogInformation($"🏗️ Database ensured created: {created}");
-            
-            // Run any pending migrations
-            var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-            if (pendingMigrations.Any())
-            {
-                logger.LogInformation($"🔄 Running {pendingMigrations.Count()} pending migrations...");
-                await context.Database.MigrateAsync();
-            }
-            
-            // Check if data exists
-            var hasUsers = await context.Users.AnyAsync();
-            logger.LogInformation($"👥 Users exist: {hasUsers}");
-            
-            if (!hasUsers)
-            {
-                logger.LogInformation("🌱 Seeding initial data...");
-                await CodexCMS.API.Helpers.SeedData.InitializeAsync(context);
-                logger.LogInformation("✅ Database seeding completed successfully");
-            }
-            else
-            {
-                logger.LogInformation("✅ Database already initialized with data");
-            }
+            Console.WriteLine("❌ Cannot connect to database");
+            return;
         }
-        else
+        
+        // ENSURE DATABASE AND TABLES ARE CREATED
+        Console.WriteLine("🔨 Creating database and tables...");
+        await context.Database.EnsureCreatedAsync();
+        
+        // Also run migrations as backup
+        try 
         {
-            logger.LogError("❌ Cannot connect to database");
+            await context.Database.MigrateAsync();
+            Console.WriteLine("✅ Database migrations applied");
         }
+        catch (Exception migEx)
+        {
+            Console.WriteLine($"⚠️ Migration warning: {migEx.Message}");
+        }
+        
+        // Initialize data
+        await CodexCMS.API.Helpers.SeedData.InitializeAsync(context);
+        Console.WriteLine("✅ Database initialization completed successfully!");
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "💥 Database initialization failed: {Message}", ex.Message);
-        logger.LogError("🔍 Inner exception: {InnerMessage}", ex.InnerException?.Message);
+        Console.WriteLine($"❌ Database initialization failed: {ex.Message}");
+        Console.WriteLine($"❌ Stack trace: {ex.StackTrace}");
     }
 });
 
