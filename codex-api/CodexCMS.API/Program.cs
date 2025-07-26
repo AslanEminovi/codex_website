@@ -55,26 +55,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Database configuration - convert PostgreSQL URL to proper format
-var postgresUrl = "postgresql://postgres:tsnNQYCddaolpYWrLGISSrOwCGiyFQWD@tramway.proxy.rlwy.net:39101/railway";
-Console.WriteLine("🔗 Converting PostgreSQL URL to connection string");
-
-try 
-{
-    var uri = new Uri(postgresUrl);
-    var connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Prefer;Trust Server Certificate=true;";
-    
-    Console.WriteLine($"🔗 Using host: {uri.Host}:{uri.Port}");
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(connectionString));
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"❌ Failed to parse PostgreSQL URL: {ex.Message}");
-    Console.WriteLine("📁 Falling back to SQLite");
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlite("Data Source=codexcms.db"));
-}
+// Database configuration - temporarily use SQLite until we solve PostgreSQL connection
+Console.WriteLine("📁 Using SQLite temporarily for testing website registration");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite("Data Source=codexcms.db"));
 
 // JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
