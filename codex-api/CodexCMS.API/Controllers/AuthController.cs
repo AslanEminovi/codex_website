@@ -68,41 +68,12 @@ namespace CodexCMS.API.Controllers
 
                 if (result.success)
                 {
-                    Console.WriteLine($"🔵 Attempting auto-login for {request.Username}");
-                    
-                    // After successful registration, log the user in to get token
-                    var loginResult = await _authService.LoginAsync(request.Username, request.Password);
-                    
-                    Console.WriteLine($"🔵 Auto-login result: success={loginResult.success}");
-                    
-                    if (loginResult.success)
+                    // Simple success response for now
+                    return Ok(new
                     {
-                        return Ok(new
-                        {
-                            success = true,
-                            token = loginResult.token,
-                            user = new
-                            {
-                                id = loginResult.user?.Id,
-                                username = loginResult.user?.Username,
-                                email = loginResult.user?.Email,
-                                role = loginResult.user?.Role.ToString(),
-                                firstName = loginResult.user?.FirstName,
-                                lastName = loginResult.user?.LastName
-                            },
-                            message = "Registration successful"
-                        });
-                    }
-                    else
-                    {
-                        Console.WriteLine($"🔴 Auto-login failed: {loginResult.token}");
-                        // Registration succeeded but login failed
-                        return Ok(new
-                        {
-                            success = true,
-                            message = "Registration successful. Please login manually."
-                        });
-                    }
+                        success = true,
+                        message = "Registration successful"
+                    });
                 }
 
                 Console.WriteLine($"🔴 Registration failed: {result.message}");
