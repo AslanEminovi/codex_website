@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 
 export default function RegisterPage() {
+  const [mounted, setMounted] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -20,6 +21,10 @@ export default function RegisterPage() {
 
   const router = useRouter()
   const { register } = useAuth()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,6 +74,31 @@ export default function RegisterPage() {
       ...prev,
       [e.target.name]: e.target.value
     }))
+  }
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="card">
+            <div className="card-content">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="flex space-x-4">
+                  <div className="h-10 bg-gray-200 rounded flex-1"></div>
+                  <div className="h-10 bg-gray-200 rounded flex-1"></div>
+                </div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-12 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (success) {

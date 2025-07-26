@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 
 export default function LoginPage() {
+  const [mounted, setMounted] = useState(false)
   const [formData, setFormData] = useState({
     usernameOrEmail: '',
     password: ''
@@ -15,6 +16,10 @@ export default function LoginPage() {
 
   const router = useRouter()
   const { login } = useAuth()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +46,26 @@ export default function LoginPage() {
       ...prev,
       [e.target.name]: e.target.value
     }))
+  }
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="card">
+            <div className="card-content">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-12 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
