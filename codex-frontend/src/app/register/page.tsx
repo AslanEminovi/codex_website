@@ -94,7 +94,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-bold text-gray-900 mb-4 block">
@@ -104,14 +104,14 @@ export default function RegisterPage() {
           <p className="text-gray-600">Join CodexCMS and start creating content</p>
         </div>
 
-        {/* Register Card */}
+        {/* Register Card - Much bigger container */}
         <div className="card">
-          <div className="card-content">
+          <div className="card-content" style={{ minHeight: '600px', padding: '3rem' }}>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* Error Message */}
               {error && (
-                <div className="alert alert-error">
+                <div className="alert alert-error mb-6">
                   {error}
                 </div>
               )}
@@ -213,20 +213,32 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <button 
-                type="submit" 
-                className="btn btn-primary w-full" 
-                disabled={loading}
-              >
-                {loading ? 'Creating account...' : 'Create Account'}
-              </button>
+              {/* Buttons Container - Always visible */}
+              <div className="space-y-4 pt-6">
+                <button 
+                  type="submit" 
+                  className="btn btn-primary w-full" 
+                  disabled={loading}
+                  style={{ minHeight: '50px' }}
+                >
+                  {loading ? 'Creating account...' : 'Create Account'}
+                </button>
+                
+                <Link 
+                  href="/login"
+                  className="btn btn-secondary w-full block text-center"
+                  style={{ minHeight: '50px', lineHeight: '50px' }}
+                >
+                  Already Have an Account? Sign In
+                </Link>
+              </div>
             </form>
 
-            <div className="mt-6 text-center border-t pt-6">
+            <div className="mt-8 text-center border-t pt-6">
               <p className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link href="/login" className="font-medium text-gray-900 hover:text-gray-700">
-                  Sign in
+                Need help? Contact support or{' '}
+                <Link href="/" className="font-medium text-gray-900 hover:text-gray-700">
+                  return to homepage
                 </Link>
               </p>
             </div>

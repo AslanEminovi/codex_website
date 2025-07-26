@@ -57,22 +57,30 @@ builder.Services.AddSwaggerGen(c =>
 
 // Database configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-if (builder.Environment.IsProduction())
+if (string.IsNullOrEmpty(connectionString))
 {
-    // Use PostgreSQL in production (Railway)
-    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-    if (!string.IsNullOrEmpty(databaseUrl))
-    {
-        connectionString = databaseUrl;
-    }
+    // Use Railway PostgreSQL if available, otherwise SQLite for development
+    connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
     
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(connectionString));
+    if (!string.IsNullOrEmpty(connectionString))
+    {
+        // Convert Railway DATABASE_URL format to connection string
+        var uri = new Uri(connectionString);
+        connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.LocalPath.TrimStart('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Require;Trust Server Certificate=true;";
+        
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(connectionString));
+    }
+    else
+    {
+        // Fallback to SQLite for development
+        connectionString = "Data Source=codexcms.db";
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlite(connectionString));
+    }
 }
 else
 {
-    // Use SQLite in development
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlite(connectionString));
 }
@@ -80,7 +88,7 @@ else
 // JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
              builder.Configuration["Jwt:Key"] ?? 
-             "YourSuperSecretKeyHereThatIsAtLeast32CharactersLong";
+             "YourDefaultSecretKeyForDevelopmentOnlyMustBeAtLeast32Characters";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -99,16 +107,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// CORS Configuration for Next.js frontend
+// CORS Configuration for Next.js frontend - UPDATED for better wildcard support
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-            "http://localhost:3000", // Local Next.js dev
-            "https://*.vercel.app",  // Vercel deployments
-            "https://codex-cms.vercel.app" // Your production domain
-        )
+        policy.SetIsOriginAllowed(origin =>
+        {
+            // Allow localhost for development
+            if (origin.StartsWith("http://localhost:") || origin.StartsWith("https://localhost:"))
+                return true;
+            
+            // Allow all Vercel deployments
+            if (origin.EndsWith(".vercel.app"))
+                return true;
+            
+            // Allow specific production domains
+            var allowedDomains = new[]
+            {
+                "https://codex-cms.vercel.app",
+                "https://codexcms.vercel.app",
+                "https://codex-website.vercel.app"
+            };
+            
+            return allowedDomains.Contains(origin);
+        })
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials();
@@ -139,12 +162,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "CodexCMS API v1");
-        c.RoutePrefix = string.Empty; // Serve Swagger at root
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "CodexCMS API V1");
+        c.RoutePrefix = string.Empty; // Makes Swagger available at root
     });
 }
 
-// Use CORS
+// Enable CORS
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
@@ -153,37 +176,32 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Health check endpoint
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+app.MapGet("/health", () => "OK");
 
-// Database initialization
-try
+// Seed data on startup
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
+    try
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         
-        // Ensure data directory exists
-        if (builder.Environment.IsProduction())
-        {
-            var dataDir = "/app/data";
-            if (!Directory.Exists(dataDir))
-            {
-                Directory.CreateDirectory(dataDir);
-            }
-        }
-        
+        // Ensure database is created
         context.Database.EnsureCreated();
         
-        // Seed initial data
-        await CodexCMS.API.Helpers.SeedData.InitializeAsync(context);
+        // Run migrations if needed
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            context.Database.Migrate();
+        }
         
-        Console.WriteLine("Database initialized successfully");
+        // Seed initial data
+        await SeedData.SeedAsync(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
-catch (Exception ex)
-{
-    Console.WriteLine($"Database initialization failed: {ex.Message}");
-}
 
-Console.WriteLine($"🚀 CodexCMS API starting on port {port}");
 app.Run();
