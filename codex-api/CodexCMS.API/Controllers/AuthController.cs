@@ -23,25 +23,25 @@ namespace CodexCMS.API.Controllers
             {
                 var result = await _authService.LoginAsync(request.UsernameOrEmail, request.Password);
                 
-                if (result.Success)
+                if (result.success)
                 {
                     return Ok(new
                     {
                         success = true,
-                        token = result.Token,
+                        token = result.token,
                         user = new
                         {
-                            id = result.User?.Id,
-                            username = result.User?.Username,
-                            email = result.User?.Email,
-                            role = result.User?.Role.ToString(),
-                            firstName = result.User?.FirstName,
-                            lastName = result.User?.LastName
+                            id = result.user?.Id,
+                            username = result.user?.Username,
+                            email = result.user?.Email,
+                            role = result.user?.Role.ToString(),
+                            firstName = result.user?.FirstName,
+                            lastName = result.user?.LastName
                         }
                     });
                 }
 
-                return BadRequest(new { success = false, message = result.ErrorMessage });
+                return BadRequest(new { success = false, message = "Invalid username/email or password." });
             }
             catch (Exception ex)
             {
@@ -62,63 +62,20 @@ namespace CodexCMS.API.Controllers
                     request.LastName
                 );
 
-                if (result.Success)
+                if (result.success)
                 {
                     return Ok(new
                     {
                         success = true,
-                        message = "Registration successful",
-                        user = new
-                        {
-                            id = result.User?.Id,
-                            username = result.User?.Username,
-                            email = result.User?.Email,
-                            role = result.User?.Role.ToString()
-                        }
+                        message = "Registration successful"
                     });
                 }
 
-                return BadRequest(new { success = false, message = result.ErrorMessage });
+                return BadRequest(new { success = false, message = result.message });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { success = false, message = "An error occurred during registration." });
-            }
-        }
-
-        [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
-        {
-            try
-            {
-                var result = await _authService.ForgotPasswordAsync(request.Email);
-                
-                // Always return success for security reasons
-                return Ok(new { success = true, message = "If the email exists, a reset link has been sent." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = "An error occurred." });
-            }
-        }
-
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
-        {
-            try
-            {
-                var result = await _authService.ResetPasswordAsync(request.Token, request.NewPassword);
-                
-                if (result.Success)
-                {
-                    return Ok(new { success = true, message = "Password reset successful" });
-                }
-
-                return BadRequest(new { success = false, message = result.ErrorMessage });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = "An error occurred during password reset." });
             }
         }
 
@@ -174,16 +131,5 @@ namespace CodexCMS.API.Controllers
         public string Password { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-    }
-
-    public class ForgotPasswordRequest
-    {
-        public string Email { get; set; } = string.Empty;
-    }
-
-    public class ResetPasswordRequest
-    {
-        public string Token { get; set; } = string.Empty;
-        public string NewPassword { get; set; } = string.Empty;
     }
 } 

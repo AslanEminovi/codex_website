@@ -139,14 +139,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Custom services
+// Custom services - keeping only what's needed for auth
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPostService, PostService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<ITagService, TagService>();
-builder.Services.AddScoped<IPageService, PageService>();
-builder.Services.AddScoped<IMediaService, MediaService>();
-builder.Services.AddScoped<IMenuService, MenuService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
