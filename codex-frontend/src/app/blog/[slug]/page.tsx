@@ -173,7 +173,7 @@ export default function BlogPost() {
               .map((relatedPost) => (
                 <article key={relatedPost.id} className="card">
                   <Image
-                    src={relatedPost.imageUrl}
+                    src={relatedPost.imageUrl || relatedPost.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
                     alt={relatedPost.title}
                     width={400}
                     height={240}

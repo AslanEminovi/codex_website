@@ -6,6 +6,15 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 
+interface UpdatePostData {
+  title: string
+  content: string
+  excerpt: string
+  featuredImageUrl: string
+  status: string
+  tags: string[]
+}
+
 export default function EditPostPage() {
   const [formData, setFormData] = useState({
     title: '',
@@ -71,7 +80,7 @@ export default function EditPostPage() {
     }
 
     try {
-      const postData = {
+      const postData: UpdatePostData = {
         title: formData.title,
         content: formData.content,
         excerpt: formData.excerpt || formData.content.substring(0, 200) + '...',
@@ -80,7 +89,7 @@ export default function EditPostPage() {
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       }
 
-      await api.updatePost(Number(params?.id), postData)
+      await api.updatePost(Number(params?.id), postData as any) // eslint-disable-line @typescript-eslint/no-explicit-any
       setSuccess(true)
       
       setTimeout(() => {

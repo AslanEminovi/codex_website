@@ -134,7 +134,7 @@ export default function BlogPage() {
                             {post.category?.name || 'General'}
                           </span>
                           <span className="text-sm text-gray-500">
-                            {formatDate(post.publishedAt || post.createdAt || post.updatedAt)}
+                            {formatDate(post.publishedAt || post.createdAt || post.updatedAt || '2024-01-01')}
                           </span>
                         </div>
                         
