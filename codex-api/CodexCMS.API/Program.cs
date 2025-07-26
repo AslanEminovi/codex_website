@@ -238,6 +238,30 @@ app.MapGet("/init-db", async (ApplicationDbContext context, ILogger<Program> log
     }
 });
 
+// Debug endpoint to check users in database
+app.MapGet("/debug/users", async (ApplicationDbContext context) =>
+{
+    try
+    {
+        var users = await context.Users.Select(u => new { 
+            u.Id, 
+            u.Username, 
+            u.Email, 
+            u.CreatedAt,
+            PasswordHashLength = u.PasswordHash.Length
+        }).ToListAsync();
+        
+        return Results.Ok(new { 
+            userCount = users.Count,
+            users = users
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
 // Database initialization
 Task.Run(async () =>
 {
