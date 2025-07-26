@@ -57,13 +57,25 @@ builder.Services.AddSwaggerGen(c =>
 
 // Database configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 if (builder.Environment.IsProduction())
 {
-    connectionString = connectionString?.Replace("CodexCMS.db", "/app/data/CodexCMS.db");
+    // Use PostgreSQL in production (Railway)
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        connectionString = databaseUrl;
+    }
+    
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
 }
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+else
+{
+    // Use SQLite in development
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlite(connectionString));
+}
 
 // JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 

@@ -367,3 +367,4 @@ FodyWeavers.xsd
 .env
 .env.local
 .env.production 
+.vercel

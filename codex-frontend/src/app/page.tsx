@@ -1,313 +1,245 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { 
-  BookOpenIcon, 
-  UserGroupIcon, 
-  ChartBarIcon,
-  GlobeAltIcon
-} from '@heroicons/react/24/outline'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useAuth } from '@/lib/auth'
 
-// Mock data - replace with actual API calls
-const featuredPosts = [
+// Real blog posts
+const blogPosts = [
   {
     id: 1,
     title: "Welcome to CodexCMS",
-    excerpt: "Discover the power of modern content management with our beautiful, intuitive platform.",
-    featuredImageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80",
-    publishedAt: "2024-01-15",
-    author: { firstName: "John", lastName: "Doe" },
-    category: { name: "Technology", slug: "technology" }
+    slug: "welcome-to-codexcms",
+    excerpt: "A modern content management system built with simplicity in mind. Learn how to get started with creating and managing your content effectively.",
+    content: `# Welcome to CodexCMS
+
+CodexCMS is a modern, clean, and simple content management system built with the latest technologies. Our platform focuses on simplicity and ease of use while providing powerful features for content creators.
+
+## Key Features
+
+- **Clean Interface**: A minimal, distraction-free writing environment
+- **Fast Performance**: Built with Next.js and C# .NET for optimal speed
+- **User Management**: Role-based access control with admin capabilities
+- **Responsive Design**: Works perfectly on all devices
+
+## Getting Started
+
+1. Create your account
+2. Start writing your first post
+3. Publish and share your content
+
+We believe that content creation should be simple, fast, and enjoyable. That's why we built CodexCMS with a focus on the writing experience.`,
+    imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80",
+    date: "Jan 15, 2024",
+    author: "CodexCMS Team",
+    category: "Technology"
   },
   {
     id: 2,
-    title: "Building Modern Web Applications",
-    excerpt: "Learn how to create stunning web experiences with the latest technologies and best practices.",
-    featuredImageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
-    publishedAt: "2024-01-12",
-    author: { firstName: "Jane", lastName: "Smith" },
-    category: { name: "Development", slug: "development" }
+    title: "Building Modern Web Apps",
+    slug: "building-modern-web-apps",
+    excerpt: "Learn how to create beautiful, fast web applications with modern tools and best practices for today's web development landscape.",
+    content: `# Building Modern Web Applications
+
+The web development landscape has evolved dramatically over the past few years. Modern web applications require a different approach than traditional websites.
+
+## Modern Stack
+
+Our recommended stack includes:
+
+- **Frontend**: Next.js with TypeScript
+- **Backend**: C# .NET Core API
+- **Database**: SQL Server or PostgreSQL
+- **Deployment**: Vercel and Railway
+
+## Best Practices
+
+### Performance
+- Code splitting and lazy loading
+- Image optimization
+- Efficient caching strategies
+
+### User Experience
+- Progressive enhancement
+- Responsive design
+- Accessibility first
+
+### Development
+- TypeScript for type safety
+- Clean code architecture
+- Comprehensive testing
+
+## Conclusion
+
+Building modern web applications requires careful consideration of performance, user experience, and maintainability. With the right tools and practices, you can create applications that are both powerful and user-friendly.`,
+    imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
+    date: "Jan 12, 2024",
+    author: "CodexCMS Team",
+    category: "Development"
   },
   {
     id: 3,
-    title: "The Future of Content Creation",
-    excerpt: "Explore how AI and automation are revolutionizing the way we create and manage content.",
-    featuredImageUrl: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80",
-    publishedAt: "2024-01-10",
-    author: { firstName: "Alex", lastName: "Johnson" },
-    category: { name: "Innovation", slug: "innovation" }
+    title: "The Future of Content",
+    slug: "future-of-content",
+    excerpt: "Exploring how content creation is evolving in the digital age and what this means for creators and platforms.",
+    content: `# The Future of Content Creation
+
+Content creation is undergoing a fundamental transformation. As technology advances and user expectations evolve, content creators and platforms must adapt to stay relevant.
+
+## Emerging Trends
+
+### AI-Assisted Writing
+- Grammar and style suggestions
+- Content optimization
+- Automated translations
+
+### Interactive Content
+- Embedded media
+- Real-time collaboration
+- Dynamic content updates
+
+### Personalization
+- Customized reading experiences
+- Adaptive content delivery
+- User preference learning
+
+## Challenges Ahead
+
+The content creation industry faces several challenges:
+
+1. **Information Overload**: Standing out in a crowded digital space
+2. **Platform Dependencies**: Reducing reliance on third-party platforms
+3. **Monetization**: Sustainable revenue models for creators
+
+## Our Vision
+
+At CodexCMS, we believe the future of content creation lies in:
+
+- **Simplicity**: Focus on writing, not technical complexity
+- **Ownership**: Creators should own their content and audience
+- **Quality**: Tools that enhance rather than complicate the creative process
+
+The future is bright for content creators who embrace these principles while staying true to their unique voice and vision.`,
+    imageUrl: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80",
+    date: "Jan 10, 2024",
+    author: "CodexCMS Team",
+    category: "Innovation"
   }
-]
-
-const categories = [
-  { id: 1, name: "Technology", slug: "technology", postCount: 12 },
-  { id: 2, name: "Development", slug: "development", postCount: 8 },
-  { id: 3, name: "Design", slug: "design", postCount: 6 },
-  { id: 4, name: "Innovation", slug: "innovation", postCount: 4 }
-]
-
-const stats = [
-  { label: "Featured Posts", value: "10+", icon: BookOpenIcon },
-  { label: "Categories", value: "8", icon: ChartBarIcon },
-  { label: "Active Users", value: "150+", icon: UserGroupIcon },
-  { label: "Page Views", value: "5K+", icon: GlobeAltIcon }
 ]
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
+  const { user, isAdmin, loading, logout } = useAuth()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="spinner"></div>
+        <div className="text-gray-500">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="glass-nav sticky top-0 z-50">
-        <div className="container-glass">
-          <div className="flex items-center justify-between h-20">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Link href="/" className="text-3xl font-black text-gradient">
-                CodexCMS
-              </Link>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="hidden md:flex items-center space-x-8"
-            >
-              <Link href="/" className="text-white/80 hover:text-white transition-colors">
-                Home
-              </Link>
-              <Link href="/blog" className="text-white/80 hover:text-white transition-colors">
-                Blog
-              </Link>
-              <Link href="/categories" className="text-white/80 hover:text-white transition-colors">
-                Categories
-              </Link>
-              <Link href="/contact" className="text-white/80 hover:text-white transition-colors">
-                Contact
-              </Link>
-              <Link href="/admin" className="glass-button-primary">
-                Admin Panel
-              </Link>
-            </motion.div>
+      <nav className="nav">
+        <div className="container">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/" className="text-2xl font-bold text-gray-900">
+              CodexCMS
+            </Link>
+            <div className="hidden md-flex items-center gap-8">
+              <Link href="/" className="nav-link">Home</Link>
+              <Link href="/blog" className="nav-link">Blog</Link>
+              {user ? (
+                <>
+                  {isAdmin && (
+                    <Link href="/admin" className="btn btn-primary">Admin Panel</Link>
+                  )}
+                  <button onClick={logout} className="btn btn-secondary">Logout</button>
+                </>
+              ) : (
+                <Link href="/login" className="btn btn-primary">Login</Link>
+              )}
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="section-padding">
-        <div className="container-glass">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center max-w-5xl mx-auto"
-          >
-            <h1 className="hero-title">
-              Welcome to{' '}
-              <span className="text-gradient">CodexCMS</span>
+      <section className="section">
+        <div className="container">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl font-bold text-gray-900 mb-6">
+              Modern Content Management
             </h1>
-            <p className="hero-subtitle">
-              A modern content management system for creating and managing your content with ease.
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Create, manage, and publish your content with our clean and simple CMS platform.
             </p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-            >
-              <Link href="/blog" className="glass-button-primary">
-                View Blog
+            <div className="flex gap-4 justify-center">
+              <Link href="/blog" className="btn btn-primary">
+                Read Our Blog
               </Link>
-              <Link href="/admin" className="glass-button-secondary">
-                Admin Panel
-              </Link>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-20">
-        <div className="container-glass">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="stats-card group"
-              >
-                <stat.icon className="w-12 h-12 text-accent-400 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
-                <div className="stats-number">{stat.value}</div>
-                <div className="text-white/80 font-semibold">{stat.label}</div>
-              </motion.div>
-            ))}
+              {isAdmin && (
+                <Link href="/admin" className="btn btn-secondary">
+                  Admin Panel
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Featured Posts */}
-      <section className="section-padding">
-        <div className="container-glass">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-              Featured <span className="text-gradient">Posts</span>
-            </h2>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Discover our latest articles and insights
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredPosts.map((post, index) => (
-              <motion.article
-                key={post.id}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="post-card group"
-              >
-                <div className="overflow-hidden rounded-t-[30px]">
-                  <Image
-                    src={post.featuredImageUrl}
-                    alt={post.title}
-                    width={800}
-                    height={250}
-                    className="post-image"
-                  />
-                </div>
-                <div className="p-8">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="tag">
-                      {post.category.name}
-                    </span>
-                    <span className="text-white/60 text-sm">
-                      {new Date(post.publishedAt).toLocaleDateString()}
-                    </span>
+      <section className="section bg-gray-50">
+        <div className="container">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Latest Posts
+          </h2>
+          <div className="grid md-grid-cols-3 gap-8">
+            {blogPosts.map((post) => (
+              <article key={post.id} className="card">
+                <Image
+                  src={post.imageUrl}
+                  alt={post.title}
+                  width={400}
+                  height={240}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="card-content">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="badge badge-gray">{post.category}</span>
+                    <span className="text-sm text-gray-500">{post.date}</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-accent-400 transition-colors">
-                    {post.title}
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    <Link href={`/blog/${post.slug}`} className="hover:text-gray-700">
+                      {post.title}
+                    </Link>
                   </h3>
-                  <p className="text-white/80 mb-6 leading-relaxed">
-                    {post.excerpt}
-                  </p>
+                  <p className="text-gray-600 mb-4">{post.excerpt}</p>
                   <div className="flex items-center justify-between">
-                    <div className="text-white/60 text-sm">
-                      By {post.author.firstName} {post.author.lastName}
-                    </div>
-                    <Link
-                      href={`/blog/${post.id}`}
-                      className="text-accent-400 hover:text-accent-300 font-semibold transition-colors"
-                    >
-                      Read More →
+                    <span className="text-sm text-gray-500">By {post.author}</span>
+                    <Link href={`/blog/${post.slug}`} className="text-sm font-medium text-gray-900 hover:text-gray-700">
+                      Read more →
                     </Link>
                   </div>
                 </div>
-              </motion.article>
+              </article>
             ))}
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-center mt-12"
-          >
-            <Link href="/blog" className="glass-button-primary">
+          
+          <div className="text-center mt-12">
+            <Link href="/blog" className="btn btn-secondary">
               View All Posts
             </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section className="py-20">
-        <div className="container-glass">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-              Explore <span className="text-gradient">Categories</span>
-            </h2>
-            <p className="text-xl text-white/80">
-              Find content that interests you
-            </p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="glass-card p-8 text-center group cursor-pointer"
-              >
-                <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-accent-400 transition-colors">
-                  {category.name}
-                </h3>
-                <p className="text-white/60">
-                  {category.postCount} posts
-                </p>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-16 border-t border-white/10">
-        <div className="container-glass">
-          <div className="text-center">
-            <div className="text-3xl font-black text-gradient mb-4">
-              CodexCMS
-            </div>
-            <p className="text-white/60 mb-8">
-              Built with Next.js, TypeScript, and C# ASP.NET Core
-            </p>
-            <div className="flex justify-center space-x-8 text-white/60">
-              <Link href="/privacy" className="hover:text-white transition-colors">
-                Privacy
-              </Link>
-              <Link href="/terms" className="hover:text-white transition-colors">
-                Terms
-              </Link>
-              <Link href="/contact" className="hover:text-white transition-colors">
-                Contact
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
