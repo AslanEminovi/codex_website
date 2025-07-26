@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { api } from '@/lib/api'
+import { api, Post as ApiPost } from '@/lib/api'
 
 interface Post {
   id: number
@@ -48,7 +48,20 @@ export default function AdminDashboard() {
     try {
       const response = await api.getPosts()
       if (response && Array.isArray(response)) {
-        setPosts(response)
+        // Map API Post to admin Post interface
+        const mappedPosts: Post[] = response.map((apiPost: ApiPost) => ({
+          id: apiPost.id,
+          title: apiPost.title,
+          status: apiPost.status,
+          author: `${apiPost.author.firstName || ''} ${apiPost.author.lastName || ''}`.trim() || apiPost.author.username,
+          date: new Date(apiPost.publishedAt || apiPost.createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          }),
+          views: apiPost.viewCount || 0
+        }))
+        setPosts(mappedPosts)
       }
     } catch (error) {
       console.error('Failed to load posts:', error)
@@ -182,7 +195,7 @@ export default function AdminDashboard() {
           </div>
           <div className="card">
             <div className="card-content">
-              <div className="text-3xl font-bold text-gray-900 mb-2">{posts.filter(p => p.status === 'Published').length}</div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">{posts.filter(p => p.status.toLowerCase() === 'published').length}</div>
               <div className="text-gray-600">Published</div>
             </div>
           </div>
@@ -194,7 +207,7 @@ export default function AdminDashboard() {
             <div className="card-content">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900">Recent Posts</h2>
-                <button className="btn btn-primary">New Post</button>
+                <Link href="/create-post" className="btn btn-primary">New Post</Link>
               </div>
               
               <div className="overflow-x-auto">
@@ -226,7 +239,7 @@ export default function AdminDashboard() {
                         <td className="text-gray-700">{post.views}</td>
                         <td>
                           <div className="flex gap-2">
-                            <button className="btn-ghost text-sm">Edit</button>
+                            <Link href={`/edit-post/${post.id}`} className="btn-ghost text-sm">Edit</Link>
                             <button 
                               className="btn-ghost text-sm text-red-600"
                               onClick={() => handleDeletePost(post.id)}

@@ -1,204 +1,199 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import { api } from '@/lib/api'
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { api, Post } from '@/lib/api';
 
-interface BlogPost {
-  id: number
-  title: string
-  slug: string
-  excerpt: string
-  content: string
-  imageUrl?: string
-  featuredImageUrl?: string
-  date?: string
-  createdAt?: string
-  publishedAt?: string
-  author: string
-  category: string
-}
-
-export default function BlogPost() {
-  const params = useParams()
-  const [post, setPost] = useState<BlogPost | null>(null)
-  const [allPosts, setAllPosts] = useState<BlogPost[]>([])
+export default function BlogPostPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const slug = params?.slug as string
-    loadPost(slug)
-  }, [params])
+    const slug = params.slug as string;
+    loadPost(slug);
+  }, [params.slug]);
 
   const loadPost = async (slug: string) => {
     try {
-      // Try to get post from API first
-      const posts = await api.getPosts()
-      if (posts && Array.isArray(posts)) {
-        setAllPosts(posts)
-        const foundPost = posts.find(p => p.slug === slug)
-        if (foundPost) {
-          setPost(foundPost)
-          return
-        }
-      }
+      const fetchedPost = await api.getPostBySlug(slug);
+      setPost(fetchedPost);
     } catch (error) {
-      console.error('Failed to load posts from API:', error)
+      console.error('Failed to load post:', error);
+      setError('Post not found');
+    } finally {
+      setLoading(false);
     }
-    
-    // If no post found, set to null
-    setPost(null)
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
   }
 
-  if (!post) {
+  if (error || !post) {
     return (
       <div className="min-h-screen bg-white">
         <nav className="nav">
           <div className="container">
-            <div className="flex items-center justify-between h-16">
+            <div className="flex items-center justify-between">
               <Link href="/" className="text-2xl font-bold text-gray-900">
                 CodexCMS
               </Link>
-              <Link href="/blog" className="btn btn-secondary">
-                ← Back to Blog
-              </Link>
+              <div className="flex items-center gap-4">
+                <Link href="/blog" className="nav-link">← Back to Blog</Link>
+              </div>
             </div>
           </div>
         </nav>
         
-        <div className="container py-16 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Post Not Found</h1>
-          <p className="text-gray-600 mb-8">The blog post you&apos;re looking for doesn&apos;t exist.</p>
-          <Link href="/blog" className="btn btn-primary">
-            View All Posts
-          </Link>
+        <div className="container section">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Post Not Found</h1>
+            <p className="text-gray-600 mb-8">The blog post you&apos;re looking for doesn&apos;t exist.</p>
+            <Link href="/blog" className="btn btn-primary">
+              Back to Blog
+            </Link>
+          </div>
         </div>
       </div>
-    )
+    );
   }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const authorName = `${post.author.firstName || ''} ${post.author.lastName || ''}`.trim() || post.author.username;
 
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className="nav">
         <div className="container">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-gray-900">
               CodexCMS
             </Link>
-            <Link href="/blog" className="btn btn-secondary">
-              ← Back to Blog
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/blog" className="nav-link">← Back to Blog</Link>
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Image */}
-      <div className="w-full h-96 overflow-hidden">
-        <Image
-          src={post.imageUrl || post.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
-          alt={post.title}
-          width={1200}
-          height={400}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      {/* Article */}
-      <article className="container py-16 max-w-4xl">
-        {/* Header */}
-        <header className="mb-12">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="badge badge-gray">{post.category}</span>
-            <span className="text-gray-500">•</span>
-            <span className="text-gray-500">{post.date}</span>
-          </div>
-          
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            {post.title}
-          </h1>
-          
-          <p className="text-xl text-gray-600 mb-6">
-            {post.excerpt}
-          </p>
-          
-          <div className="flex items-center text-gray-500">
-            <span>By {post.author}</span>
-          </div>
-        </header>
-
-        {/* Content */}
-        <div className="prose prose-lg max-w-none">
-          {post.content.split('\n').map((line, index) => {
-            if (line.startsWith('# ')) {
-              return <h1 key={index} className="text-4xl font-bold text-gray-900 mt-12 mb-6">{line.substring(2)}</h1>
-            } else if (line.startsWith('## ')) {
-              return <h2 key={index} className="text-3xl font-bold text-gray-900 mt-10 mb-4">{line.substring(3)}</h2>
-            } else if (line.startsWith('### ')) {
-              return <h3 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-3">{line.substring(4)}</h3>
-            } else if (line.startsWith('- **') && line.includes('**:')) {
-              const parts = line.substring(2).split('**:')
-              const title = parts[0].replace('**', '')
-              const description = parts[1]
-              return (
-                <div key={index} className="mb-2">
-                  <strong className="text-gray-900">{title}:</strong>
-                  <span className="text-gray-700">{description}</span>
+      {/* Blog Post */}
+      <article className="section">
+        <div className="container">
+          <div className="max-w-4xl mx-auto">
+            {/* Header */}
+            <header className="text-center mb-12">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <span className="badge badge-gray">{post.category?.name || 'General'}</span>
+                <span className="text-sm text-gray-500">5 min read</span>
+              </div>
+              
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                {post.title}
+              </h1>
+              
+              {post.excerpt && (
+                <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                  {post.excerpt}
+                </p>
+              )}
+              
+              <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900">{authorName}</span>
                 </div>
-              )
-            } else if (line.startsWith('- ')) {
-              return <li key={index} className="text-gray-700 mb-1">{line.substring(2)}</li>
-            } else if (line.match(/^\d+\./)) {
-              return <li key={index} className="text-gray-700 mb-1">{line.substring(line.indexOf('.') + 2)}</li>
-            } else if (line.trim() === '') {
-              return <div key={index} className="mb-4"></div>
-            } else {
-              return <p key={index} className="text-gray-700 mb-4 leading-relaxed">{line}</p>
-            }
-          })}
+                <div>{formatDate(post.publishedAt || post.createdAt)}</div>
+                {post.category && <div>{post.category.name}</div>}
+              </div>
+            </header>
+
+            {/* Featured Image */}
+            {post.featuredImageUrl && (
+              <div className="mb-12">
+                <Image 
+                  src={post.featuredImageUrl} 
+                  alt={post.title}
+                  width={800}
+                  height={400}
+                  className="w-full h-96 object-cover rounded-lg"
+                />
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="prose prose-lg max-w-none">
+              <div 
+                dangerouslySetInnerHTML={{ __html: post.content || 'No content available.' }}
+                className="text-gray-700 leading-relaxed space-y-6"
+                style={{
+                  fontSize: '1.125rem',
+                  lineHeight: '1.75'
+                }}
+              />
+            </div>
+
+            {/* Tags */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="mt-12 pt-8 border-t border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <span 
+                      key={tag.id}
+                      className="badge badge-gray"
+                      style={tag.color ? { backgroundColor: tag.color, color: 'white' } : {}}
+                    >
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Footer */}
+            <footer className="mt-16 pt-8 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-center sm:text-left">
+                  <p className="text-gray-600">
+                    Written by <span className="font-medium text-gray-900">{authorName}</span>
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Published on {formatDate(post.publishedAt || post.createdAt)}
+                  </p>
+                </div>
+                
+                <div className="flex gap-4">
+                  <Link href="/blog" className="btn btn-secondary">
+                    More Posts
+                  </Link>
+                  <button 
+                    onClick={() => router.back()} 
+                    className="btn btn-ghost"
+                  >
+                    Go Back
+                  </button>
+                </div>
+              </div>
+            </footer>
+          </div>
         </div>
       </article>
-
-      {/* Related Posts */}
-      <section className="bg-gray-50 py-16">
-        <div className="container">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            More Posts
-          </h2>
-          <div className="grid md-grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {allPosts
-              .filter(p => p.slug !== post.slug)
-              .slice(0, 2)
-              .map((relatedPost) => (
-                <article key={relatedPost.id} className="card">
-                  <Image
-                    src={relatedPost.imageUrl || relatedPost.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
-                    alt={relatedPost.title}
-                    width={400}
-                    height={240}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="card-content">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="badge badge-gray">{relatedPost.category}</span>
-                      <span className="text-sm text-gray-500">{relatedPost.date}</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      <Link href={`/blog/${relatedPost.slug}`} className="hover:text-gray-700">
-                        {relatedPost.title}
-                      </Link>
-                    </h3>
-                    <p className="text-gray-600 mb-4">{relatedPost.excerpt}</p>
-                    <Link href={`/blog/${relatedPost.slug}`} className="text-sm font-medium text-gray-900 hover:text-gray-700">
-                      Read more →
-                    </Link>
-                  </div>
-                </article>
-              ))}
-          </div>
-        </div>
-      </section>
     </div>
-  )
+  );
 } 

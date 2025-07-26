@@ -1,16 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { api } from '@/lib/api'
-
-interface User {
-  id: number
-  username: string
-  email: string
-  role: string
-  firstName?: string
-  lastName?: string
-}
+import { api, User } from '@/lib/api'
 
 interface AuthContextType {
   user: User | null
@@ -33,51 +24,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const isAdmin = user?.role === 'Admin' || user?.email === 'eminoviaslan@gmail.com'
+  const isAdmin = user?.role === 'Admin' || user?.role === 'admin'
 
   useEffect(() => {
     // Check if user is logged in on mount
     const token = localStorage.getItem('token')
-    const userEmail = localStorage.getItem('userEmail')
     
-    if (token && userEmail) {
+    if (token) {
       api.setToken(token)
-      // Create user from stored data for now
-      const storedUser: User = {
-        id: 1,
-        username: userEmail.split('@')[0],
-        email: userEmail,
-        role: userEmail === 'eminoviaslan@gmail.com' ? 'Admin' : 'User',
-        firstName: 'User',
-        lastName: 'Name'
-      }
-      setUser(storedUser)
+      // Try to get current user from API
+      getCurrentUser()
+    } else {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
+
+  const getCurrentUser = async () => {
+    try {
+      const currentUser = await api.getCurrentUser()
+      setUser(currentUser)
+    } catch (error) {
+      console.error('Failed to get current user:', error)
+      // If token is invalid, clear it
+      localStorage.removeItem('token')
+      api.setToken(null)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const login = async (usernameOrEmail: string, password: string): Promise<boolean> => {
     try {
-      // TODO: Replace with real API call when backend is connected
-      console.log('Login attempt:', usernameOrEmail, password)
+      const response = await api.login(usernameOrEmail, password)
       
-      // For now, simulate successful login
-      const mockUser: User = {
-        id: 1,
-        username: usernameOrEmail.includes('@') ? usernameOrEmail.split('@')[0] : usernameOrEmail,
-        email: usernameOrEmail.includes('@') ? usernameOrEmail : `${usernameOrEmail}@example.com`,
-        role: usernameOrEmail === 'eminoviaslan@gmail.com' ? 'Admin' : 'User',
-        firstName: 'User',
-        lastName: 'Name'
+      if (response.success && response.token && response.user) {
+        // Store token and set user
+        localStorage.setItem('token', response.token)
+        api.setToken(response.token)
+        setUser(response.user)
+        return true
       }
       
-      // Store in localStorage
-      localStorage.setItem('token', 'mock-token')
-      localStorage.setItem('userEmail', mockUser.email)
-      
-      setUser(mockUser)
-      return true
-    } catch {
+      return false
+    } catch (error) {
+      console.error('Login failed:', error)
       return false
     }
   }
@@ -90,33 +80,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastName: string
   }): Promise<boolean> => {
     try {
-      // TODO: Replace with real API call when backend is connected
-      console.log('Registration attempt:', userData)
+      const response = await api.register(userData)
       
-      // For now, simulate successful registration
-      const newUser: User = {
-        id: Date.now(),
-        username: userData.username,
-        email: userData.email,
-        role: userData.email === 'eminoviaslan@gmail.com' ? 'Admin' : 'User',
-        firstName: userData.firstName,
-        lastName: userData.lastName
+      if (response.success && response.token && response.user) {
+        // Store token and set user
+        localStorage.setItem('token', response.token)
+        api.setToken(response.token)
+        setUser(response.user)
+        return true
       }
       
-      // Store in localStorage
-      localStorage.setItem('token', 'mock-token')
-      localStorage.setItem('userEmail', newUser.email)
-      
-      setUser(newUser)
-      return true
-    } catch {
+      return false
+    } catch (error) {
+      console.error('Registration failed:', error)
       return false
     }
   }
 
   const logout = () => {
     localStorage.removeItem('token')
-    localStorage.removeItem('userEmail')
     api.setToken(null)
     setUser(null)
   }

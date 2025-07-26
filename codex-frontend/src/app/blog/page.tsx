@@ -1,188 +1,108 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { api } from '@/lib/api'
-
-interface BlogPost {
-  id: number
-  title: string
-  slug: string
-  excerpt: string
-  featuredImageUrl?: string
-  publishedAt?: string
-  createdAt?: string
-  updatedAt?: string
-  author?: {
-    firstName?: string
-    lastName?: string
-  }
-  category?: {
-    name?: string
-  }
-}
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import MagicBento, { BentoCardProps } from '@/components/MagicBento';
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [blogs, setBlogs] = useState<BentoCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    loadPosts()
-  }, [])
+    loadPosts();
+  }, []);
 
   const loadPosts = async () => {
     try {
-      const response = await api.getPosts()
-      if (response && Array.isArray(response)) {
-        setPosts(response)
-      }
+      const posts = await api.getPosts();
+      const convertedBlogs: BentoCardProps[] = posts.map(post => ({
+        color: "#ffffff",
+        title: post.title,
+        description: post.excerpt || "Click to read more about this topic",
+        label: post.category?.name || "General",
+        author: `${post.author.firstName || ''} ${post.author.lastName || ''}`.trim() || post.author.username,
+        date: new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        }),
+        readTime: "5 min read", // Default since API doesn't provide this
+        category: post.category?.name || "General",
+        slug: post.slug
+      }));
+      setBlogs(convertedBlogs);
     } catch (error) {
-      console.error('Failed to load posts from API:', error)
-      setPosts([]) // No fallback, empty array
+      console.error('Failed to load posts:', error);
+      // If API fails, show empty state
+      setBlogs([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const filteredPosts = posts.filter(post =>
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
+  const handleBlogClick = (blog: BentoCardProps) => {
+    if (blog.slug) {
+      router.push(`/blog/${blog.slug}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="nav">
-        <div className="container">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-gray-900">
-              CodexCMS
-            </Link>
-            <div className="hidden md-flex items-center gap-8">
-              <Link href="/" className="nav-link">Home</Link>
-              <Link href="/blog" className="nav-link">Blog</Link>
-              <Link href="/create-post" className="nav-link">Create Post</Link>
-              <Link href="/login" className="btn btn-primary">Login</Link>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Our Blog
+          </h1>
+          <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+            Discover insights, tutorials, and stories about modern web development and technology.
+          </p>
+          {!loading && (
+            <div className="text-gray-500 text-sm">
+              {blogs.length} {blogs.length === 1 ? 'article' : 'articles'} available
             </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="section">
-        <div className="container">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight mx-auto">
-                Our Blog
-              </h1>
-              <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
-                Discover insights, tutorials, and stories about modern web development and content management.
-              </p>
-
-              {/* Search */}
-              <div className="max-w-md mx-auto mb-12">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search posts..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input pl-12"
-                  />
-                  <svg className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Posts Grid */}
-      <section className="section bg-gray-50">
-        <div className="container">
-          {loading ? (
-            <div className="text-center">
-              <div className="text-gray-500">Loading posts...</div>
-            </div>
-          ) : (
-            <>
-              {filteredPosts.length > 0 ? (
-                <div className="grid md-grid-cols-2 lg-grid-cols-3 gap-8">
-                  {filteredPosts.map((post) => (
-                    <article key={post.id} className="card">
-                      <Image
-                        src={post.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
-                        alt={post.title}
-                        width={400}
-                        height={240}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="card-content">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="badge badge-gray">
-                            {post.category?.name || 'General'}
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            {formatDate(post.publishedAt || post.createdAt || post.updatedAt || '2024-01-01')}
-                          </span>
-                        </div>
-                        
-                        <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                          <Link href={`/blog/${post.slug}`} className="hover:text-gray-700">
-                            {post.title}
-                          </Link>
-                        </h2>
-                        
-                        <p className="text-gray-600 mb-4 line-clamp-3">
-                          {post.excerpt}
-                        </p>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center text-sm text-gray-500">
-                            <span>
-                              By {post.author?.firstName || 'CodexCMS'} {post.author?.lastName || 'Team'}
-                            </span>
-                          </div>
-                          
-                          <Link 
-                            href={`/blog/${post.slug}`}
-                            className="text-sm font-medium text-gray-900 hover:text-gray-700 flex items-center"
-                          >
-                            Read more
-                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                          </Link>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts found</h3>
-                  <p className="text-gray-600">
-                    {posts.length === 0 ? 'No posts available. Create some posts in the admin panel!' : 'Try adjusting your search terms.'}
-                  </p>
-                </div>
-              )}
-            </>
           )}
         </div>
-      </section>
+
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500">Loading posts...</div>
+          </div>
+        ) : blogs.length > 0 ? (
+          <>
+            <div className="flex justify-center">
+              <MagicBento 
+                textAutoHide={true}
+                enableStars={true}
+                enableSpotlight={true}
+                enableBorderGlow={true}
+                enableTilt={true}
+                enableMagnetism={true}
+                clickEffect={true}
+                spotlightRadius={300}
+                particleCount={12}
+                glowColor="17, 24, 39"
+                blogs={blogs}
+                onCardClick={handleBlogClick}
+              />
+            </div>
+
+            <div className="mt-12 text-center">
+              <p className="text-gray-500 text-sm">
+                Click on any blog card to read the full article. Each post includes detailed insights and practical examples.
+              </p>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts available</h3>
+            <p className="text-gray-600 mb-8">
+              No posts have been published yet. Check back later for new content!
+            </p>
+          </div>
+        )}
+      </div>
     </div>
-  )
+  );
 } 

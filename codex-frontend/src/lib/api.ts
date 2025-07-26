@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://codexcms-production.up.railway.app'
 
 export interface Post {
   id: number
@@ -54,6 +54,15 @@ export interface AuthResponse {
     lastName?: string
   }
   message?: string
+}
+
+export interface User {
+  id: number
+  username: string
+  email: string
+  role: string
+  firstName?: string
+  lastName?: string
 }
 
 export interface Category {
@@ -151,8 +160,8 @@ class ApiClient {
     })
   }
 
-  async getCurrentUser() {
-    return this.request('/auth/me')
+  async getCurrentUser(): Promise<User> {
+    return this.request<User>('/auth/me')
   }
 
   // Posts methods
@@ -162,7 +171,7 @@ class ApiClient {
     search?: string
     categoryId?: number
     status?: string
-  }): Promise<ApiResponse<Post[]>> {
+  }): Promise<Post[]> {
     const searchParams = new URLSearchParams()
     if (params?.page) searchParams.set('page', params.page.toString())
     if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString())
@@ -171,7 +180,7 @@ class ApiClient {
     if (params?.status) searchParams.set('status', params.status)
 
     const query = searchParams.toString()
-    return this.request<ApiResponse<Post[]>>(`/posts${query ? `?${query}` : ''}`)
+    return this.request<Post[]>(`/posts${query ? `?${query}` : ''}`)
   }
 
   async getPost(id: number): Promise<Post> {
@@ -186,8 +195,8 @@ class ApiClient {
     return this.request<Post>(`/posts/${id}`)
   }
 
-  async getFeaturedPosts(limit = 5): Promise<ApiResponse<Post[]>> {
-    return this.request<ApiResponse<Post[]>>(`/posts/featured?limit=${limit}`)
+  async getFeaturedPosts(limit = 5): Promise<Post[]> {
+    return this.request<Post[]>(`/posts/featured?limit=${limit}`)
   }
 
   async createPost(postData: Partial<Post>): Promise<{ success: boolean; data: { id: number; slug: string } }> {

@@ -2,28 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
-
-interface BlogPost {
-  id: number
-  title: string
-  slug: string
-  excerpt: string
-  imageUrl?: string
-  featuredImageUrl?: string
-  date?: string
-  createdAt?: string
-  publishedAt?: string
-  author: string
-  category: string
-}
+import MagicBento, { BentoCardProps } from '@/components/MagicBento'
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const { user, isAdmin, loading, logout } = useAuth()
+  const [blogs, setBlogs] = useState<BentoCardProps[]>([])
+  const [loading, setLoading] = useState(true)
+  const { user, isAdmin, loading: authLoading, logout } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -31,19 +20,40 @@ export default function HomePage() {
   }, [])
 
   const loadPosts = async () => {
-          try {
-        const response = await api.getPosts()
-        if (response && Array.isArray(response)) {
-          setPosts(response.slice(0, 3)) // Only show first 3 posts
-        }
-      } catch (error) {
-        console.error('Failed to load posts from API:', error)
-        // Show empty if API fails
-        setPosts([])
-      }
+    try {
+      const posts = await api.getPosts({ pageSize: 6 })
+      const convertedBlogs: BentoCardProps[] = posts.map(post => ({
+        color: "#ffffff",
+        title: post.title,
+        description: post.excerpt || "Click to read more about this topic",
+        label: post.category?.name || "General",
+        author: `${post.author.firstName || ''} ${post.author.lastName || ''}`.trim() || post.author.username,
+        date: new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        }),
+        readTime: "5 min read", // Default since API doesn't provide this
+        category: post.category?.name || "General",
+        slug: post.slug
+      }))
+      setBlogs(convertedBlogs)
+    } catch (error) {
+      console.error('Failed to load posts:', error)
+      // If API fails, show empty state instead of mock data
+      setBlogs([])
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (!mounted || loading) {
+  const handleBlogClick = (blog: BentoCardProps) => {
+    if (blog.slug) {
+      router.push(`/blog/${blog.slug}`)
+    }
+  }
+
+  if (!mounted || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-gray-500">Loading...</div>
@@ -107,48 +117,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Posts */}
+      {/* Blog Posts Section */}
       <section className="section bg-gray-50">
         <div className="container">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Latest Posts
-          </h2>
-                      <div className="grid md-grid-cols-3 gap-8 lg:gap-12">
-              {posts.map((post) => (
-              <article key={post.id} className="card">
-                                  <Image
-                    src={post.imageUrl || post.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
-                    alt={post.title}
-                  width={400}
-                  height={240}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="card-content">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="badge badge-gray">{post.category}</span>
-                    <span className="text-sm text-gray-500">{post.date}</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    <Link href={`/blog/${post.slug}`} className="hover:text-gray-700">
-                      {post.title}
-                    </Link>
-                  </h3>
-                  <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">By {post.author}</span>
-                    <Link href={`/blog/${post.slug}`} className="text-sm font-medium text-gray-900 hover:text-gray-700">
-                      Read more →
-                    </Link>
-                  </div>
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Latest Posts
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Discover insights, tutorials, and stories about modern web development and technology.
+              </p>
+            </div>
+            
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500">Loading posts...</div>
+              </div>
+            ) : blogs.length > 0 ? (
+              <>
+                <div className="flex justify-center">
+                  <MagicBento 
+                    textAutoHide={true}
+                    enableStars={true}
+                    enableSpotlight={true}
+                    enableBorderGlow={true}
+                    enableTilt={true}
+                    enableMagnetism={true}
+                    clickEffect={true}
+                    spotlightRadius={300}
+                    particleCount={8}
+                    glowColor="17, 24, 39"
+                    blogs={blogs}
+                    onCardClick={handleBlogClick}
+                  />
                 </div>
-              </article>
-            ))}
-          </div>
-          
-          <div className="text-center mt-12">
-            <Link href="/blog" className="btn btn-secondary">
-              View All Posts
-            </Link>
+                
+                <div className="text-center mt-12">
+                  <Link href="/blog" className="btn btn-secondary">
+                    View All Posts
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts available</h3>
+                <p className="text-gray-600 mb-8">
+                  No posts have been published yet. {user && "Create some posts to get started!"}
+                </p>
+                {user && (
+                  <Link href="/create-post" className="btn btn-primary">
+                    Create Your First Post
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>
