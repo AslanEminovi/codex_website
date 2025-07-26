@@ -54,6 +54,8 @@ namespace CodexCMS.API.Controllers
         {
             try
             {
+                Console.WriteLine($"🔵 Registration attempt: {request.Username}, {request.Email}");
+                
                 var result = await _authService.RegisterAsync(
                     request.Username, 
                     request.Email, 
@@ -62,10 +64,16 @@ namespace CodexCMS.API.Controllers
                     request.LastName
                 );
 
+                Console.WriteLine($"🔵 Registration result: success={result.success}, message={result.message}");
+
                 if (result.success)
                 {
+                    Console.WriteLine($"🔵 Attempting auto-login for {request.Username}");
+                    
                     // After successful registration, log the user in to get token
                     var loginResult = await _authService.LoginAsync(request.Username, request.Password);
+                    
+                    Console.WriteLine($"🔵 Auto-login result: success={loginResult.success}");
                     
                     if (loginResult.success)
                     {
@@ -87,6 +95,7 @@ namespace CodexCMS.API.Controllers
                     }
                     else
                     {
+                        Console.WriteLine($"🔴 Auto-login failed: {loginResult.token}");
                         // Registration succeeded but login failed
                         return Ok(new
                         {
@@ -96,10 +105,13 @@ namespace CodexCMS.API.Controllers
                     }
                 }
 
+                Console.WriteLine($"🔴 Registration failed: {result.message}");
                 return BadRequest(new { success = false, message = result.message });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"🔴 Registration exception: {ex.Message}");
+                Console.WriteLine($"🔴 Stack trace: {ex.StackTrace}");
                 return StatusCode(500, new { success = false, message = "An error occurred during registration." });
             }
         }
