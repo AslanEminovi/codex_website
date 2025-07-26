@@ -178,29 +178,37 @@ app.MapControllers();
 // Health check endpoint
 app.MapGet("/health", () => "OK");
 
-// Seed data on startup
+// Database initialization and seed data
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        
+        logger.LogInformation("Starting database initialization...");
         
         // Ensure database is created
-        context.Database.EnsureCreated();
+        await context.Database.EnsureCreatedAsync();
+        logger.LogInformation("Database ensured created");
         
-        // Run migrations if needed
+        // Run any pending migrations
         if (context.Database.GetPendingMigrations().Any())
         {
-            context.Database.Migrate();
+            logger.LogInformation("Running pending migrations...");
+            await context.Database.MigrateAsync();
         }
         
-        // Seed initial data
-        await SeedData.SeedAsync(context);
+        // Seed initial data using the correct method name
+        await CodexCMS.API.Helpers.SeedData.InitializeAsync(context);
+        logger.LogInformation("Database seeding completed successfully");
     }
     catch (Exception ex)
     {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        logger.LogError(ex, "An error occurred while initializing the database: {Message}", ex.Message);
+        
+        // Don't throw - let the app start anyway
     }
 }
 
