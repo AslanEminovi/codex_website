@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using CodexCMS.API.Services;
 using CodexCMS.Core.Models;
+using CodexCMS.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace CodexCMS.API.Controllers
 {
@@ -10,10 +12,12 @@ namespace CodexCMS.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ApplicationDbContext _context;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, ApplicationDbContext context)
         {
             _authService = authService;
+            _context = context;
         }
 
         [HttpPost("login")]
@@ -116,7 +120,31 @@ namespace CodexCMS.API.Controllers
                     catch (Exception loginEx)
                     {
                         Console.WriteLine($"🔴 Auto-login exception: {loginEx.Message}");
-                        // Registration succeeded but login failed - still return success
+                        
+                        // Auto-login failed, but we still need to return token and user for frontend
+                        // Get the user we just created and generate token manually
+                        var createdUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+                        if (createdUser != null)
+                        {
+                            var manualToken = _authService.GenerateJwtToken(createdUser);
+                            return Ok(new
+                            {
+                                success = true,
+                                token = manualToken,
+                                user = new
+                                {
+                                    id = createdUser.Id,
+                                    username = createdUser.Username,
+                                    email = createdUser.Email,
+                                    role = createdUser.Role.ToString(),
+                                    firstName = createdUser.FirstName,
+                                    lastName = createdUser.LastName
+                                },
+                                message = "Registration successful"
+                            });
+                        }
+                        
+                        // If we can't find the user, return simple success
                         return Ok(new
                         {
                             success = true,
