@@ -45,7 +45,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-xl">
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-bold text-gray-900 mb-4 block">
@@ -55,14 +55,14 @@ export default function LoginPage() {
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
-        {/* Login Card - Much bigger container */}
+        {/* Login Card - MUCH BIGGER CONTAINER */}
         <div className="card">
-          <div className="card-content" style={{ minHeight: '500px', padding: '3rem' }}>
+          <div className="card-content" style={{ minHeight: '650px', padding: '4rem 3rem' }}>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Error Message */}
               {error && (
-                <div className="alert alert-error mb-6">
+                <div className="alert alert-error mb-8">
                   {error}
                 </div>
               )}
@@ -109,13 +109,13 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              {/* Buttons Container - Always visible */}
-              <div className="space-y-4 pt-6">
+              {/* Buttons Container - MUCH MORE SPACE */}
+              <div className="space-y-6 pt-8">
                 <button 
                   type="submit" 
                   className="btn btn-primary w-full" 
                   disabled={loading}
-                  style={{ minHeight: '50px' }}
+                  style={{ minHeight: '60px', fontSize: '1.1rem' }}
                 >
                   {loading ? 'Signing in...' : 'Sign In'}
                 </button>
@@ -123,14 +123,14 @@ export default function LoginPage() {
                 <Link 
                   href="/register"
                   className="btn btn-secondary w-full block text-center"
-                  style={{ minHeight: '50px', lineHeight: '50px' }}
+                  style={{ minHeight: '60px', lineHeight: '60px', fontSize: '1.1rem' }}
                 >
                   Create New Account
                 </Link>
               </div>
             </form>
 
-            <div className="mt-8 text-center border-t pt-6">
+            <div className="mt-12 text-center border-t pt-8">
               <p className="text-sm text-gray-600">
                 Need help? Contact support or{' '}
                 <Link href="/" className="font-medium text-gray-900 hover:text-gray-700">
