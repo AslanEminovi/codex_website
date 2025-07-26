@@ -263,12 +263,24 @@ select.input {
 /* Clean section spacing */
 .section {
   padding: 5rem 0;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (min-width: 768px) {
   .section {
     padding: 8rem 0;
   }
+}
+
+/* Ensure perfect text centering */
+.text-center {
+  text-align: center !important;
+}
+
+.mx-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 /* Clean table styles */

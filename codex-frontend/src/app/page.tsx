@@ -84,22 +84,24 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="section">
         <div className="container">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-              Modern Content Management
-            </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Create, manage, and publish your content with our clean and simple CMS platform.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
-              <Link href="/blog" className="btn btn-primary">
-                Read Our Blog
-              </Link>
-              {isAdmin && (
-                <Link href="/admin" className="btn btn-secondary">
-                  Admin Panel
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight mx-auto">
+                Modern Content Management
+              </h1>
+              <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+                Create, manage, and publish your content with our clean and simple CMS platform.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
+                <Link href="/blog" className="btn btn-primary">
+                  Read Our Blog
                 </Link>
-              )}
+                {isAdmin && (
+                  <Link href="/admin" className="btn btn-secondary">
+                    Admin Panel
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>
