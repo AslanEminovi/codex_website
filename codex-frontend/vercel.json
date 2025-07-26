@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://codex-api-production.up.railway.app",
+    "NEXT_PUBLIC_APP_NAME": "CodexCMS",
+    "NEXT_PUBLIC_APP_DESCRIPTION": "Modern Content Management System"
+  }
+} 
