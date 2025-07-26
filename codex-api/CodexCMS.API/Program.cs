@@ -179,36 +179,61 @@ app.MapGet("/init-db", async (ApplicationDbContext context, ILogger<Program> log
             return Results.BadRequest("Cannot connect to database");
         }
         
-        // Try to ensure created
+        // DELETE DATABASE AND RECREATE TO ENSURE FRESH START
+        logger.LogInformation("Deleting and recreating database...");
+        await context.Database.EnsureDeletedAsync();
         var created = await context.Database.EnsureCreatedAsync();
-        logger.LogInformation($"Database ensured created: {created}");
+        logger.LogInformation($"Database recreated: {created}");
         
-        // Check if Users table exists
-        var hasUsers = await context.Users.AnyAsync();
-        logger.LogInformation($"Users table accessible: {hasUsers}");
-        
-        // Try seeding if no users exist
-        if (!hasUsers)
+        // Force migrations
+        try 
         {
-            logger.LogInformation("No users found, attempting to seed...");
-            await CodexCMS.API.Helpers.SeedData.InitializeAsync(context);
-            logger.LogInformation("Seeding completed");
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Migrations applied successfully");
+        }
+        catch (Exception migEx)
+        {
+            logger.LogWarning($"Migration warning: {migEx.Message}");
+        }
+        
+        // Check if Users table exists by trying to query it
+        bool hasUsersTable = false;
+        try 
+        {
+            var userCount = await context.Users.CountAsync();
+            hasUsersTable = true;
+            logger.LogInformation($"Users table exists with {userCount} users");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Users table check failed: {ex.Message}");
+        }
+        
+        // Try seeding if table exists but no users
+        if (hasUsersTable)
+        {
+            var userCount = await context.Users.CountAsync();
+            if (userCount == 0)
+            {
+                logger.LogInformation("No users found, attempting to seed...");
+                await CodexCMS.API.Helpers.SeedData.InitializeAsync(context);
+                logger.LogInformation("Seeding completed");
+                userCount = await context.Users.CountAsync();
+                logger.LogInformation($"Users after seeding: {userCount}");
+            }
         }
         
         return Results.Ok(new { 
             canConnect, 
             created, 
-            hasUsers,
-            message = "Database initialization completed" 
+            hasUsersTable,
+            message = "Database initialization completed"
         });
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Database initialization failed: {Message}", ex.Message);
-        return Results.BadRequest(new { 
-            error = ex.Message, 
-            innerError = ex.InnerException?.Message 
-        });
+        logger.LogError(ex, "Database initialization failed");
+        return Results.BadRequest(new { error = ex.Message, stackTrace = ex.StackTrace });
     }
 });
 
