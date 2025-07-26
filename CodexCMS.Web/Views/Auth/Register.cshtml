@@ -1,0 +1,109 @@
+@model CodexCMS.Web.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-card p-5 mt-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus display-1 text-gradient"></i>
+                    <h2 class="text-gradient mt-3">Create Account</h2>
+                    <p class="text-secondary">Join our community today</p>
+                </div>
+
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FirstName" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input asp-for="FirstName" class="form-control" placeholder="Enter your first name">
+                            </div>
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="LastName" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input asp-for="LastName" class="form-control" placeholder="Enter your last name">
+                            </div>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-at"></i>
+                            </span>
+                            <input asp-for="Username" class="form-control" placeholder="Choose a username">
+                        </div>
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input asp-for="Email" class="form-control" placeholder="Enter your email">
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input asp-for="Password" class="form-control" placeholder="Create a password">
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password">
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-secondary mb-0">Already have an account?</p>
+                    <a asp-action="Login" class="btn btn-secondary mt-2">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

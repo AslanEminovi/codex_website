@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: codexcms
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: JWT_SECRET_KEY
+        generateValue: true
+    disk:
+      name: codexcms-data
+      mountPath: /app/data
+      sizeGB: 1
+
+databases:
+  - name: codexcms-db
+    databaseName: codexcms
+    user: codexcms
+    plan: free

@@ -1,0 +1,74 @@
+@model CodexCMS.Web.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="glass-card p-5 mt-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-circle display-1 text-gradient"></i>
+                    <h2 class="text-gradient mt-3">Welcome Back</h2>
+                    <p class="text-secondary">Sign in to your account</p>
+                </div>
+
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input asp-for="Username" class="form-control" placeholder="Enter your username or email">
+                        </div>
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input asp-for="Password" class="form-control" placeholder="Enter your password">
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input asp-for="RememberMe" class="form-check-input">
+                        <label asp-for="RememberMe" class="form-check-label"></label>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <a asp-action="ForgotPassword" class="text-decoration-none">
+                            <i class="bi bi-question-circle me-1"></i>Forgot your password?
+                        </a>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-secondary mb-0">Don't have an account?</p>
+                    <a asp-action="Register" class="btn btn-secondary mt-2">
+                        <i class="bi bi-person-plus me-2"></i>Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
