@@ -55,44 +55,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Database configuration
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_PUBLIC_URL") ?? Environment.GetEnvironmentVariable("DATABASE_URL");
-if (!string.IsNullOrEmpty(connectionString))
-{
-    try
-    {
-        Console.WriteLine($"🔗 Attempting database connection...");
-        
-        // Try with SSL Mode=Prefer instead of Require
-        var modifiedConnectionString = connectionString;
-        if (connectionString.Contains("postgresql://"))
-        {
-            // Convert postgresql:// to proper connection string format
-            var uri = new Uri(connectionString);
-            modifiedConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Prefer;Trust Server Certificate=true;";
-        }
-        
-        Console.WriteLine($"🔗 Using connection: Host={new Uri(connectionString).Host}");
-        
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(modifiedConnectionString));
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Failed to use DATABASE_URL: {ex.Message}");
-        // Fallback to SQLite
-        Console.WriteLine("📁 Falling back to SQLite");
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite("Data Source=codexcms.db"));
-    }
-}
-else
-{
-    // Fallback to SQLite for development
-    Console.WriteLine("📁 Using SQLite fallback - no DATABASE_URL found");
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlite("Data Source=codexcms.db"));
-}
+// Database configuration - temporarily use SQLite to test registration
+Console.WriteLine("📁 Using SQLite for testing");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite("Data Source=codexcms.db"));
 
 // JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
