@@ -68,12 +68,54 @@ namespace CodexCMS.API.Controllers
 
                 if (result.success)
                 {
-                    // Simple success response for now
-                    return Ok(new
+                    try 
                     {
-                        success = true,
-                        message = "Registration successful"
-                    });
+                        Console.WriteLine($"🔵 Attempting auto-login for {request.Username}");
+                        
+                        // After successful registration, log the user in to get token
+                        var loginResult = await _authService.LoginAsync(request.Username, request.Password);
+                        
+                        Console.WriteLine($"🔵 Auto-login result: success={loginResult.success}");
+                        
+                        if (loginResult.success)
+                        {
+                            return Ok(new
+                            {
+                                success = true,
+                                token = loginResult.token,
+                                user = new
+                                {
+                                    id = loginResult.user?.Id,
+                                    username = loginResult.user?.Username,
+                                    email = loginResult.user?.Email,
+                                    role = loginResult.user?.Role.ToString(),
+                                    firstName = loginResult.user?.FirstName,
+                                    lastName = loginResult.user?.LastName
+                                },
+                                message = "Registration successful"
+                            });
+                        }
+                        else
+                        {
+                            Console.WriteLine($"🔴 Auto-login failed: {loginResult.token}");
+                            // Registration succeeded but login failed - still return success
+                            return Ok(new
+                            {
+                                success = true,
+                                message = "Registration successful. Please login manually."
+                            });
+                        }
+                    }
+                    catch (Exception loginEx)
+                    {
+                        Console.WriteLine($"🔴 Auto-login exception: {loginEx.Message}");
+                        // Registration succeeded but login failed - still return success
+                        return Ok(new
+                        {
+                            success = true,
+                            message = "Registration successful. Please login manually."
+                        });
+                    }
                 }
 
                 Console.WriteLine($"🔴 Registration failed: {result.message}");
