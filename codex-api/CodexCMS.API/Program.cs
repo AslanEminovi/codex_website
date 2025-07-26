@@ -59,27 +59,17 @@ builder.Services.AddSwaggerGen(c =>
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrEmpty(connectionString))
 {
-    // Parse Railway PostgreSQL URL: postgresql://user:password@host:port/database
     try
     {
-        var uri = new Uri(connectionString);
-        var host = uri.Host;
-        var port = uri.Port;
-        var database = uri.AbsolutePath.TrimStart('/');
-        var userInfo = uri.UserInfo.Split(':');
-        var username = userInfo[0];
-        var password = userInfo.Length > 1 ? userInfo[1] : "";
+        Console.WriteLine($"🔗 Using DATABASE_URL: {connectionString.Substring(0, 20)}...");
         
-        var postgresConnectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
-        
+        // Use the connection string directly for Npgsql
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(postgresConnectionString));
-            
-        Console.WriteLine($"🔗 Using PostgreSQL: Host={host}, Database={database}");
+            options.UseNpgsql(connectionString));
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Failed to parse DATABASE_URL: {ex.Message}");
+        Console.WriteLine($"❌ Failed to use DATABASE_URL: {ex.Message}");
         // Fallback to SQLite
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite("Data Source=codexcms.db"));
