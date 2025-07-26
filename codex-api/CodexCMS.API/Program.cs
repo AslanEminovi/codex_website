@@ -55,10 +55,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Database configuration - temporarily use SQLite to test registration
-Console.WriteLine("📁 Using SQLite for testing");
+// Database configuration - use PostgreSQL with correct public URL
+var postgresUrl = "postgresql://postgres:tsnNQYCddaolpYWrLGISSrOwCGiyFQWD@tramway.proxy.rlwy.net:39101/railway";
+Console.WriteLine("🔗 Using PostgreSQL with public URL");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite("Data Source=codexcms.db"));
+    options.UseNpgsql(postgresUrl));
 
 // JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
