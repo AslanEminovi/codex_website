@@ -116,6 +116,51 @@ namespace CodexCMS.API.Controllers
             }
         }
 
+        [HttpPost("test-register")]
+        public async Task<IActionResult> TestRegister()
+        {
+            try
+            {
+                var testData = new RegisterRequest
+                {
+                    Username = "testuser" + DateTime.Now.Ticks,
+                    Email = "test" + DateTime.Now.Ticks + "@example.com",
+                    Password = "Test123!",
+                    FirstName = "Test",
+                    LastName = "User"
+                };
+
+                Console.WriteLine($"🔵 TEST Registration attempt: {testData.Username}, {testData.Email}");
+                
+                var result = await _authService.RegisterAsync(
+                    testData.Username, 
+                    testData.Email, 
+                    testData.Password, 
+                    testData.FirstName, 
+                    testData.LastName
+                );
+
+                Console.WriteLine($"🔵 TEST Registration result: success={result.success}, message={result.message}");
+                
+                return Ok(new { 
+                    success = result.success, 
+                    message = result.message,
+                    testData = testData,
+                    timestamp = DateTime.UtcNow
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"🔴 TEST Registration exception: {ex.Message}");
+                Console.WriteLine($"🔴 TEST Stack trace: {ex.StackTrace}");
+                return Ok(new { 
+                    success = false, 
+                    error = ex.Message,
+                    stackTrace = ex.StackTrace
+                });
+            }
+        }
+
         [HttpGet("me")]
         [Authorize]
         public async Task<IActionResult> GetCurrentUser()
