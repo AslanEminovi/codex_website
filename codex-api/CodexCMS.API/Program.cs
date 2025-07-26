@@ -285,4 +285,55 @@ Task.Run(async () =>
     }
 });
 
+// Database connection test endpoint
+app.MapGet("/test-db", async () =>
+{
+    try
+    {
+        var connectionString = $"Data Source=/tmp/codexcms.db";
+        Console.WriteLine($"Testing connection string: {connectionString}");
+        
+        // Test raw SQLite connection
+        using (var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            Console.WriteLine("✅ Raw SQLite connection successful");
+            
+            // Test creating a simple table
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "CREATE TABLE IF NOT EXISTS TestTable (id INTEGER PRIMARY KEY, name TEXT)";
+                await command.ExecuteNonQueryAsync();
+                Console.WriteLine("✅ Table creation successful");
+            }
+            
+            // Test inserting data
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "INSERT INTO TestTable (name) VALUES ('test')";
+                await command.ExecuteNonQueryAsync();
+                Console.WriteLine("✅ Data insertion successful");
+            }
+            
+            connection.Close();
+        }
+        
+        return Results.Ok(new { 
+            success = true, 
+            message = "Raw SQLite connection test passed",
+            path = "/tmp/codexcms.db"
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Database test failed: {ex.Message}");
+        Console.WriteLine($"❌ Stack trace: {ex.StackTrace}");
+        return Results.BadRequest(new { 
+            success = false, 
+            error = ex.Message,
+            stackTrace = ex.StackTrace
+        });
+    }
+});
+
 app.Run();
