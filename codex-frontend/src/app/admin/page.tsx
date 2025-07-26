@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { api } from '@/lib/api'
 
 // Mock data
 const mockPosts = [
@@ -48,17 +49,52 @@ export default function AdminDashboard() {
     const userEmail = localStorage.getItem('userEmail')
     const adminAccess = userEmail === 'eminoviaslan@gmail.com'
     setIsAdmin(adminAccess)
-    setLoading(false)
     
     if (!adminAccess) {
       // Redirect non-admin users
       window.location.href = '/'
+      return
     }
+    
+    // Load real data from API
+    loadPosts()
+    loadUsers()
   }, [])
 
-  const handleDeletePost = (postId: number) => {
+  const loadPosts = async () => {
+    try {
+      const response = await api.getPosts()
+      if (response && Array.isArray(response)) {
+        setPosts(response)
+      }
+    } catch (error) {
+      console.error('Failed to load posts:', error)
+      // Keep mock data if API fails
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadUsers = async () => {
+    try {
+      // TODO: Implement getUsers API call when backend supports it
+      console.log('Loading users from API...')
+    } catch (error) {
+      console.error('Failed to load users:', error)
+    }
+  }
+
+  const handleDeletePost = async (postId: number) => {
     if (confirm('Are you sure you want to delete this post?')) {
-      setPosts(posts.filter(post => post.id !== postId))
+      try {
+        await api.deletePost(postId)
+        // Remove from local state after successful API call
+        setPosts(posts.filter(post => post.id !== postId))
+        console.log('Post deleted successfully')
+      } catch (error) {
+        console.error('Failed to delete post:', error)
+        alert('Failed to delete post. Please try again.')
+      }
     }
   }
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/lib/auth'
+import { api } from '@/lib/api'
 
 // Real blog posts
 const blogPosts = [
@@ -130,11 +131,26 @@ The future is bright for content creators who embrace these principles while sta
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
+  const [posts, setPosts] = useState(blogPosts) // Start with mock data
   const { user, isAdmin, loading, logout } = useAuth()
 
   useEffect(() => {
     setMounted(true)
+    loadPosts()
   }, [])
+
+  const loadPosts = async () => {
+    try {
+      const response = await api.getPosts()
+      if (response && Array.isArray(response)) {
+        // Use API data if available, otherwise keep mock data
+        setPosts(response.slice(0, 3)) // Only show first 3 posts
+      }
+    } catch (error) {
+      console.error('Failed to load posts from API:', error)
+      // Keep using mock data if API fails
+    }
+  }
 
   if (!mounted || loading) {
     return (
@@ -201,8 +217,8 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
             Latest Posts
           </h2>
-          <div className="grid md-grid-cols-3 gap-8 lg:gap-12">
-            {blogPosts.map((post) => (
+                      <div className="grid md-grid-cols-3 gap-8 lg:gap-12">
+              {posts.map((post) => (
               <article key={post.id} className="card">
                 <Image
                   src={post.imageUrl}

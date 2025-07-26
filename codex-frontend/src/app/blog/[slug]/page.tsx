@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { api } from '@/lib/api'
 
 // Same blog posts data
 const blogPosts = [
@@ -131,12 +132,33 @@ The future is bright for content creators who embrace these principles while sta
 export default function BlogPost() {
   const params = useParams()
   const [post, setPost] = useState<typeof blogPosts[0] | null>(null)
+  const [allPosts, setAllPosts] = useState(blogPosts)
 
   useEffect(() => {
     const slug = params?.slug as string
+    loadPost(slug)
+  }, [params])
+
+  const loadPost = async (slug: string) => {
+    try {
+      // Try to get post from API first
+      const posts = await api.getPosts()
+      if (posts && Array.isArray(posts)) {
+        setAllPosts(posts)
+        const foundPost = posts.find(p => p.slug === slug)
+        if (foundPost) {
+          setPost(foundPost)
+          return
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load posts from API:', error)
+    }
+    
+    // Fallback to mock data
     const foundPost = blogPosts.find(p => p.slug === slug)
     setPost(foundPost || null)
-  }, [params])
+  }
 
   if (!post) {
     return (
@@ -254,7 +276,7 @@ export default function BlogPost() {
             More Posts
           </h2>
           <div className="grid md-grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {blogPosts
+            {allPosts
               .filter(p => p.slug !== post.slug)
               .slice(0, 2)
               .map((relatedPost) => (
