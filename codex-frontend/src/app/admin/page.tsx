@@ -4,43 +4,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 
-// Mock data
-const mockPosts = [
-  {
-    id: 1,
-    title: "Welcome to CodexCMS",
-    status: "Published",
-    author: "John Doe",
-    date: "Jan 15, 2024",
-    views: 1250
-  },
-  {
-    id: 2,
-    title: "Building Modern Web Apps",
-    status: "Draft",
-    author: "Jane Smith",
-    date: "Jan 12, 2024",
-    views: 890
-  },
-  {
-    id: 3,
-    title: "The Future of Content",
-    status: "Published",
-    author: "Alex Johnson",
-    date: "Jan 10, 2024",
-    views: 2100
-  }
-]
-
-const mockUsers = [
-  { id: 1, username: "johndoe", email: "john@example.com", role: "Author", status: "Active" },
-  { id: 2, username: "janesmith", email: "jane@example.com", role: "Editor", status: "Active" },
-  { id: 3, username: "alexj", email: "alex@example.com", role: "Admin", status: "Active" }
-]
-
 export default function AdminDashboard() {
-  const [posts, setPosts] = useState(mockPosts)
-  const [users, setUsers] = useState(mockUsers)
+  const [posts, setPosts] = useState<any[]>([])
+  const [users, setUsers] = useState<any[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -69,7 +35,8 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Failed to load posts:', error)
-      // Keep mock data if API fails
+      // Show empty if API fails
+      setPosts([])
     } finally {
       setLoading(false)
     }

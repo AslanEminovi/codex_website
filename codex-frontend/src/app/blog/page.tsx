@@ -5,48 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { api } from '@/lib/api'
 
-// Mock data as fallback
-const mockPosts = [
-  {
-    id: 1,
-    title: "Welcome to CodexCMS",
-    slug: "welcome-to-codexcms",
-    excerpt: "Discover the power of modern content management with our beautiful, intuitive platform designed for creators.",
-    featuredImageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80",
-    publishedAt: "2024-01-15",
-    author: { firstName: "John", lastName: "Doe" },
-    category: { name: "Technology", slug: "technology" },
-    viewCount: 1250,
-    readTime: 5
-  },
-  {
-    id: 2,
-    title: "Building Modern Web Applications",
-    slug: "building-modern-web-applications",
-    excerpt: "Learn how to create stunning web experiences with the latest technologies, frameworks, and best practices.",
-    featuredImageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
-    publishedAt: "2024-01-12",
-    author: { firstName: "Jane", lastName: "Smith" },
-    category: { name: "Development", slug: "development" },
-    viewCount: 890,
-    readTime: 8
-  },
-  {
-    id: 3,
-    title: "The Future of Content Creation",
-    slug: "future-of-content-creation",
-    excerpt: "Explore how AI and automation are revolutionizing the way we create, manage, and distribute content.",
-    featuredImageUrl: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80",
-    publishedAt: "2024-01-10",
-    author: { firstName: "Alex", lastName: "Johnson" },
-    category: { name: "Innovation", slug: "innovation" },
-    viewCount: 675,
-    readTime: 6
-  }
-]
-
 export default function BlogPage() {
-  const [posts, setPosts] = useState(mockPosts)
+  const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -62,7 +22,7 @@ export default function BlogPage() {
       }
     } catch (error) {
       console.error('Failed to load posts from API:', error)
-      // Keep mock data if API fails
+      setPosts([]) // No fallback, empty array
     } finally {
       setLoading(false)
     }
@@ -138,62 +98,64 @@ export default function BlogPage() {
             </div>
           ) : (
             <>
-              <div className="grid md-grid-cols-2 lg-grid-cols-3 gap-8">
-                {filteredPosts.map((post) => (
-                  <article key={post.id} className="card">
-                    <Image
-                      src={post.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
-                      alt={post.title}
-                      width={400}
-                      height={240}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="card-content">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="badge badge-gray">
-                          {post.category?.name || 'General'}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(post.publishedAt || post.createdAt)}
-                        </span>
-                      </div>
-                      
-                      <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                        <Link href={`/blog/${post.slug}`} className="hover:text-gray-700">
-                          {post.title}
-                        </Link>
-                      </h2>
-                      
-                      <p className="text-gray-600 mb-4 line-clamp-3">
-                        {post.excerpt}
-                      </p>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center text-sm text-gray-500">
-                          <span>
-                            By {post.author?.firstName || 'CodexCMS'} {post.author?.lastName || 'Team'}
+              {filteredPosts.length > 0 ? (
+                <div className="grid md-grid-cols-2 lg-grid-cols-3 gap-8">
+                  {filteredPosts.map((post) => (
+                    <article key={post.id} className="card">
+                      <Image
+                        src={post.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
+                        alt={post.title}
+                        width={400}
+                        height={240}
+                        className="w-full h-48 object-cover"
+                      />
+                      <div className="card-content">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="badge badge-gray">
+                            {post.category?.name || 'General'}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {formatDate(post.publishedAt || post.createdAt || post.updatedAt)}
                           </span>
                         </div>
                         
-                        <Link 
-                          href={`/blog/${post.slug}`}
-                          className="text-sm font-medium text-gray-900 hover:text-gray-700 flex items-center"
-                        >
-                          Read more
-                          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                          </svg>
-                        </Link>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-3">
+                          <Link href={`/blog/${post.slug}`} className="hover:text-gray-700">
+                            {post.title}
+                          </Link>
+                        </h2>
+                        
+                        <p className="text-gray-600 mb-4 line-clamp-3">
+                          {post.excerpt}
+                        </p>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-sm text-gray-500">
+                            <span>
+                              By {post.author?.firstName || 'CodexCMS'} {post.author?.lastName || 'Team'}
+                            </span>
+                          </div>
+                          
+                          <Link 
+                            href={`/blog/${post.slug}`}
+                            className="text-sm font-medium text-gray-900 hover:text-gray-700 flex items-center"
+                          >
+                            Read more
+                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                          </Link>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              {filteredPosts.length === 0 && !loading && (
+                    </article>
+                  ))}
+                </div>
+              ) : (
                 <div className="text-center py-12">
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts found</h3>
-                  <p className="text-gray-600">Try adjusting your search terms.</p>
+                  <p className="text-gray-600">
+                    {posts.length === 0 ? 'No posts available. Create some posts in the admin panel!' : 'Try adjusting your search terms.'}
+                  </p>
                 </div>
               )}
             </>
