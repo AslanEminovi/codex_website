@@ -97,7 +97,7 @@ export default function BlogPost() {
       {/* Hero Image */}
       <div className="w-full h-96 overflow-hidden">
         <Image
-          src={post.imageUrl}
+          src={post.imageUrl || post.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80'}
           alt={post.title}
           width={1200}
           height={400}

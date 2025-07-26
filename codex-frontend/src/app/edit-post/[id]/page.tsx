@@ -29,7 +29,7 @@ export default function EditPostPage() {
     if (params?.id && user) {
       loadPost()
     }
-  }, [params?.id, user])
+  }, [params?.id, user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPost = async () => {
     try {
