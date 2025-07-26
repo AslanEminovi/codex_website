@@ -55,10 +55,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Database configuration - temporarily use SQLite until we solve PostgreSQL connection
-Console.WriteLine("📁 Using SQLite temporarily for testing website registration");
+// Database configuration - use SQLite with full path to writable directory
+var sqliteDbPath = Path.Combine("/tmp", "codexcms.db");
+Console.WriteLine($"📁 Using SQLite at: {sqliteDbPath}");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite("Data Source=codexcms.db"));
+    options.UseSqlite($"Data Source={sqliteDbPath}"));
 
 // JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
