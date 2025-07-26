@@ -64,11 +64,36 @@ namespace CodexCMS.API.Controllers
 
                 if (result.success)
                 {
-                    return Ok(new
+                    // After successful registration, log the user in to get token
+                    var loginResult = await _authService.LoginAsync(request.Username, request.Password);
+                    
+                    if (loginResult.success)
                     {
-                        success = true,
-                        message = "Registration successful"
-                    });
+                        return Ok(new
+                        {
+                            success = true,
+                            token = loginResult.token,
+                            user = new
+                            {
+                                id = loginResult.user?.Id,
+                                username = loginResult.user?.Username,
+                                email = loginResult.user?.Email,
+                                role = loginResult.user?.Role.ToString(),
+                                firstName = loginResult.user?.FirstName,
+                                lastName = loginResult.user?.LastName
+                            },
+                            message = "Registration successful"
+                        });
+                    }
+                    else
+                    {
+                        // Registration succeeded but login failed
+                        return Ok(new
+                        {
+                            success = true,
+                            message = "Registration successful. Please login manually."
+                        });
+                    }
                 }
 
                 return BadRequest(new { success = false, message = result.message });
