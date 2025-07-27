@@ -102,6 +102,17 @@ namespace CodexCMS.API.Controllers
         {
             try
             {
+                // Validate input
+                if (string.IsNullOrWhiteSpace(request.Title))
+                {
+                    return BadRequest(new { message = "Title is required" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Content))
+                {
+                    return BadRequest(new { message = "Content is required" });
+                }
+
                 // Get current user ID from JWT token
                 var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
                 if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
@@ -109,20 +120,63 @@ namespace CodexCMS.API.Controllers
                     return Unauthorized(new { message = "Invalid user token" });
                 }
 
-                // Get default category if none provided
+                // Verify user exists
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    return Unauthorized(new { message = "User not found" });
+                }
+
+                // Generate unique slug
+                var baseSlug = GenerateSlug(request.Title);
+                var slug = baseSlug;
+                var counter = 1;
+                while (await _context.Posts.AnyAsync(p => p.Slug == slug))
+                {
+                    slug = $"{baseSlug}-{counter}";
+                    counter++;
+                }
+
+                // Get or create default category
                 int? categoryId = request.CategoryId;
-                if (categoryId == null)
+                if (categoryId == null || categoryId == 0)
                 {
                     var defaultCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Slug == "general");
-                    categoryId = defaultCategory?.Id;
+                    if (defaultCategory == null)
+                    {
+                        // Create default category if it doesn't exist
+                        defaultCategory = new Category
+                        {
+                            Name = "General",
+                            Slug = "general",
+                            Description = "General posts",
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        _context.Categories.Add(defaultCategory);
+                        await _context.SaveChangesAsync();
+                    }
+                    categoryId = defaultCategory.Id;
+                }
+                else
+                {
+                    // Verify category exists
+                    var category = await _context.Categories.FindAsync(categoryId);
+                    if (category == null)
+                    {
+                        return BadRequest(new { message = "Invalid category" });
+                    }
                 }
 
                 var post = new Post
                 {
-                    Title = request.Title,
-                    Content = request.Content,
-                    Excerpt = request.Excerpt ?? (request.Content.Length > 200 ? request.Content.Substring(0, 200) + "..." : request.Content),
-                    Slug = GenerateSlug(request.Title),
+                    Title = request.Title.Trim(),
+                    Content = request.Content.Trim(),
+                    Excerpt = !string.IsNullOrWhiteSpace(request.Excerpt) 
+                        ? request.Excerpt.Trim() 
+                        : (request.Content.Length > 200 ? request.Content.Substring(0, 200) + "..." : request.Content),
+                    Slug = slug,
                     AuthorId = userId,
                     CategoryId = categoryId,
                     Status = PostStatus.Published,
@@ -134,14 +188,24 @@ namespace CodexCMS.API.Controllers
                 _context.Posts.Add(post);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { message = "Post created successfully", postId = post.Id });
+                return Ok(new { 
+                    message = "Post created successfully", 
+                    postId = post.Id,
+                    slug = post.Slug
+                });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"🔴 Post creation error: {ex.Message}");
                 Console.WriteLine($"🔴 Inner exception: {ex.InnerException?.Message}");
                 Console.WriteLine($"🔴 Stack trace: {ex.StackTrace}");
-                return StatusCode(500, new { message = $"Error creating post: {ex.Message}" });
+                
+                // Return detailed error for debugging
+                var errorMessage = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new { 
+                    message = $"Error creating post: {errorMessage}",
+                    details = ex.StackTrace
+                });
             }
         }
 
