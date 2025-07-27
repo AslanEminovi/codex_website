@@ -87,7 +87,7 @@ export default function AdminDashboard() {
         }))
       }
     } catch (error) {
-      console.error('Failed to load posts:', error)
+      // Silently handle error - posts will remain empty array
       // Show empty if API fails
       setPosts([])
     } finally {
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
         }))
       }
     } catch (error) {
-      console.error('Failed to load users:', error)
+      // Silently handle error - users will remain empty array
     }
   }
 
@@ -127,7 +127,7 @@ export default function AdminDashboard() {
         loadUsers() // Refresh users list
       }
     } catch (error) {
-      console.error('Failed to make user admin:', error)
+      // Silently handle error
     }
   }
 

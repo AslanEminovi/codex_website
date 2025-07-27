@@ -55,7 +55,7 @@ export default function BlogPage() {
         setPosts(convertedPosts)
       }
     } catch (error) {
-      console.error('Failed to load posts:', error)
+      // Silently handle error - posts will remain empty array
     } finally {
       setLoading(false)
     }

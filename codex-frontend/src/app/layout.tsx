@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
@@ -35,7 +35,7 @@ export default function RootLayout({
               position="top-right"
               richColors
               expand={false}
-              theme="dark"
+              theme="light"
             />
           </AuthProvider>
         </ThemeProvider>

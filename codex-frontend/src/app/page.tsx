@@ -52,7 +52,7 @@ export default function HomePage() {
         setPosts(convertedPosts.slice(0, 6)) // Show only 6 posts
       }
     } catch (error) {
-      console.error('Failed to load posts:', error)
+      // Silently handle error - posts will remain empty array
     } finally {
       setLoading(false)
     }

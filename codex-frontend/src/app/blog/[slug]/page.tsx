@@ -23,7 +23,6 @@ export default function BlogPostPage() {
       const fetchedPost = await api.getPostBySlug(slug);
       setPost(fetchedPost);
     } catch (error) {
-      console.error('Failed to load post:', error);
       setError('Post not found');
     } finally {
       setLoading(false);
@@ -58,9 +57,9 @@ export default function BlogPostPage() {
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Post Not Found</h1>
             <p className="text-gray-600 mb-8">The blog post you&apos;re looking for doesn&apos;t exist.</p>
-            <Link href="/blog" className="btn btn-primary">
-              Back to Blog
-            </Link>
+                          <Link href="/blog" className="btn-primary">
+                Back to Blog
+              </Link>
           </div>
         </div>
       </div>
@@ -100,7 +99,7 @@ export default function BlogPostPage() {
             {/* Header */}
             <header className="text-center mb-12">
               <div className="flex items-center justify-center gap-4 mb-6">
-                <span className="badge badge-gray">{post.category?.name || 'General'}</span>
+                <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">{post.category?.name || 'General'}</span>
                 <span className="text-sm text-gray-500">5 min read</span>
               </div>
               
@@ -139,13 +138,14 @@ export default function BlogPostPage() {
             {/* Content */}
             <div className="prose prose-lg max-w-none">
               <div 
-                dangerouslySetInnerHTML={{ __html: post.content || 'No content available.' }}
-                className="text-gray-700 leading-relaxed space-y-6"
+                className="text-gray-700 leading-relaxed space-y-6 whitespace-pre-wrap"
                 style={{
                   fontSize: '1.125rem',
                   lineHeight: '1.75'
                 }}
-              />
+              >
+                {post.content || 'No content available.'}
+              </div>
             </div>
 
             {/* Tags */}
@@ -156,7 +156,7 @@ export default function BlogPostPage() {
                   {post.tags.map((tag) => (
                     <span 
                       key={tag.id}
-                      className="badge badge-gray"
+                      className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
                       style={tag.color ? { backgroundColor: tag.color, color: 'white' } : {}}
                     >
                       {tag.name}
@@ -179,12 +179,12 @@ export default function BlogPostPage() {
                 </div>
                 
                 <div className="flex gap-4">
-                  <Link href="/blog" className="btn btn-secondary">
+                  <Link href="/blog" className="btn-secondary">
                     More Posts
                   </Link>
                   <button 
                     onClick={() => router.back()} 
-                    className="btn btn-ghost"
+                    className="btn-ghost"
                   >
                     Go Back
                   </button>

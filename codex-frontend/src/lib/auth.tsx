@@ -44,8 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentUser = await api.getCurrentUser()
       setUser(currentUser)
     } catch (error) {
-      console.error('Failed to get current user:', error)
-      // If token is invalid, clear it
+      // If token is invalid, clear it silently
       localStorage.removeItem('token')
       api.setToken(null)
     } finally {
@@ -67,7 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       return false
     } catch (error) {
-      console.error('Login failed:', error)
       return false
     }
   }
@@ -96,7 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       return false
     } catch (error) {
-      console.error('Registration failed:', error)
       return false
     }
   }

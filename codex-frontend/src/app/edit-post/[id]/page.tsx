@@ -89,7 +89,12 @@ export default function EditPostPage() {
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       }
 
-      await api.updatePost(Number(params?.id), postData as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+              await api.updatePost(Number(params?.id), {
+          title: postData.title,
+          content: postData.content,
+          excerpt: postData.excerpt,
+          categoryId: postData.categoryId
+        })
       setSuccess(true)
       
       setTimeout(() => {
@@ -128,7 +133,7 @@ export default function EditPostPage() {
               <Link href="/" className="text-2xl font-bold text-gray-900">
                 CodexCMS
               </Link>
-              <Link href="/login" className="btn btn-primary">Login</Link>
+              <Link href="/login" className="btn-primary">Login</Link>
             </div>
           </div>
         </nav>
@@ -178,7 +183,7 @@ export default function EditPostPage() {
               <Link href="/" className="nav-link">Home</Link>
               <Link href="/blog" className="nav-link">Blog</Link>
               <Link href="/create-post" className="nav-link">Create Post</Link>
-              <button onClick={() => {}} className="btn btn-secondary">Logout</button>
+                              <button onClick={() => {}} className="btn-secondary">Logout</button>
             </div>
           </div>
         </div>
@@ -301,13 +306,13 @@ export default function EditPostPage() {
                   <div className="flex gap-4">
                     <button 
                       type="submit" 
-                      className="btn btn-primary" 
+                      className="btn-primary w-full" 
                       disabled={loading}
                     >
                       {loading ? 'Updating...' : 'Update Post'}
                     </button>
                     
-                    <Link href="/blog" className="btn btn-secondary">
+                    <Link href="/blog" className="btn-secondary">
                       Cancel
                     </Link>
                   </div>
