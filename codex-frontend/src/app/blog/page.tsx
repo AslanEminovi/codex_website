@@ -79,7 +79,7 @@ export default function BlogPage() {
             <div className="animate-pulse space-y-8">
               <div className="skeleton h-8 w-1/3 rounded"></div>
               <div className="skeleton h-12 w-full rounded"></div>
-              <div className="grid md-grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="card">
                     <div className="card-content">
@@ -191,7 +191,7 @@ export default function BlogPage() {
                   )}
                 </div>
 
-                <div className="grid md-grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {filteredPosts.map((post) => (
                     <article key={post.id} className="card group">
                       <div className="card-content">

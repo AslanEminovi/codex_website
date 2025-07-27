@@ -168,7 +168,7 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="grid md-grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="card text-center">
               <div className="card-content">
                 <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -222,7 +222,7 @@ export default function HomePage() {
             </div>
 
             {loading ? (
-              <div className="grid md-grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="card">
                     <div className="card-content">

@@ -21,10 +21,15 @@ export default function CreatePostPage() {
 
   useEffect(() => {
     setMounted(true)
-    if (!user) {
+    // Don't redirect immediately, wait for auth to load
+  }, [])
+
+  useEffect(() => {
+    // Only redirect if we're sure user is not authenticated and component is mounted
+    if (mounted && !user) {
       router.push('/login')
     }
-  }, [user, router])
+  }, [mounted, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
