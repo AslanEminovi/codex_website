@@ -77,7 +77,9 @@ catch (Exception ex)
 // JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
              builder.Configuration["Jwt:Key"] ?? 
-             "YourDefaultSecretKeyForDevelopmentOnlyMustBeAtLeast32Characters";
+             "YourDefaultSecretKeyForDevelopmentOnlyMustBeAtLeast32CharactersLongToMeet256BitRequirement123456789";
+
+Console.WriteLine($"🔑 JWT Key length: {jwtKey.Length} characters ({jwtKey.Length * 8} bits)");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
