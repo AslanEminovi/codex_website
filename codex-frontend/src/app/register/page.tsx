@@ -84,14 +84,23 @@ export default function RegisterPage() {
     setError('') // Clear error when user types
   }
 
+  // Show loading state during hydration
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="w-full max-w-lg">
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-block">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">CodexCMS</h1>
+            </Link>
+            <h2 className="text-title text-gray-900 mb-2">Create your account</h2>
+            <p className="text-body text-gray-600">
+              Join our community of creators and start publishing
+            </p>
+          </div>
           <div className="card">
             <div className="card-content">
               <div className="animate-pulse space-y-4">
-                <div className="skeleton h-4 w-3/4 rounded"></div>
                 <div className="flex space-x-4">
                   <div className="skeleton h-12 rounded flex-1"></div>
                   <div className="skeleton h-12 rounded flex-1"></div>

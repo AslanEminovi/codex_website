@@ -58,8 +58,17 @@ export default function LoginPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-block">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">CodexCMS</h1>
+            </Link>
+            <h2 className="text-title text-gray-900 mb-2">Welcome back</h2>
+            <p className="text-body text-gray-600">
+              Sign in to your account to continue creating
+            </p>
+          </div>
           <div className="card">
             <div className="card-content">
               <div className="animate-pulse space-y-4">
