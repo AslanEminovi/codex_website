@@ -14,6 +14,28 @@ namespace CodexCMS.API.Helpers
                 return;
             }
 
+            // Create default categories
+            var generalCategory = new Category
+            {
+                Name = "General",
+                Slug = "general",
+                Description = "General blog posts",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var techCategory = new Category
+            {
+                Name = "Technology",
+                Slug = "technology", 
+                Description = "Technology related posts",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.Categories.AddRange(generalCategory, techCategory);
+            await context.SaveChangesAsync();
+
             // Create admin user
             var adminUser = new User
             {
@@ -28,44 +50,6 @@ namespace CodexCMS.API.Helpers
             };
 
             context.Users.Add(adminUser);
-
-            // Create sample categories
-            var technologyCategory = new Category
-            {
-                Name = "Technology",
-                Description = "Technology related articles",
-                Slug = "technology",
-                IsActive = true,
-                DisplayOrder = 1,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            var lifestyleCategory = new Category
-            {
-                Name = "Lifestyle",
-                Description = "Lifestyle and personal development articles",
-                Slug = "lifestyle",
-                IsActive = true,
-                DisplayOrder = 2,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            context.Categories.AddRange(technologyCategory, lifestyleCategory);
-
-            // Create sample tags
-            var tags = new List<Tag>
-            {
-                new Tag { Name = "Programming", Slug = "programming", Description = "Programming related content", Color = "#007bff", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Tag { Name = "Web Development", Slug = "web-development", Description = "Web development articles", Color = "#28a745", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Tag { Name = "Productivity", Slug = "productivity", Description = "Productivity tips and tricks", Color = "#ffc107", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Tag { Name = "Health", Slug = "health", Description = "Health and wellness", Color = "#dc3545", IsActive = true, CreatedAt = DateTime.UtcNow }
-            };
-
-            context.Tags.AddRange(tags);
-
-            await context.SaveChangesAsync();
 
             // Create sample posts
             var samplePost = new Post
@@ -82,7 +66,7 @@ namespace CodexCMS.API.Helpers
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 AuthorId = adminUser.Id,
-                CategoryId = technologyCategory.Id
+                CategoryId = techCategory.Id // Changed to techCategory.Id
             };
 
             context.Posts.Add(samplePost);

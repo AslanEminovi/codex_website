@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api, Post as ApiPost } from '@/lib/api'
+import { useAuth } from '@/lib/auth'
 
 interface Post {
   id: number
@@ -17,23 +18,23 @@ interface User {
   id: number
   username: string
   email: string
+  firstName: string
+  lastName: string
   role: string
-  status: string
+  isActive: boolean
+  createdAt: string
+  lastLoginAt?: string
 }
 
 export default function AdminDashboard() {
+  const { user, isAdmin } = useAuth()
   const [posts, setPosts] = useState<Post[]>([])
   const [users, setUsers] = useState<User[]>([])
-  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is admin
-    const userEmail = localStorage.getItem('userEmail')
-    const adminAccess = userEmail === 'eminoviaslan@gmail.com'
-    setIsAdmin(adminAccess)
-    
-    if (!adminAccess) {
+    // Check if user is admin using the auth system
+    if (!isAdmin) {
       // Redirect non-admin users
       window.location.href = '/'
       return
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
     // Load real data from API
     loadPosts()
     loadUsers()
-  }, [])
+  }, [isAdmin])
 
   const loadPosts = async () => {
     try {
@@ -74,8 +75,15 @@ export default function AdminDashboard() {
 
   const loadUsers = async () => {
     try {
-      // TODO: Implement getUsers API call when backend supports it
-      console.log('Loading users from API...')
+      const response = await fetch('https://codexcms-production.up.railway.app/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      if (response.ok) {
+        const userData = await response.json()
+        setUsers(userData)
+      }
     } catch (error) {
       console.error('Failed to load users:', error)
     }
@@ -288,7 +296,7 @@ export default function AdminDashboard() {
                             {user.role}
                           </span>
                         </td>
-                        <td className="text-green-600 font-medium">{user.status}</td>
+                        <td className="text-green-600 font-medium">{user.isActive ? 'Active' : 'Inactive'}</td>
                         <td>
                           <div className="flex gap-2">
                             <button className="btn-ghost text-sm">Edit</button>

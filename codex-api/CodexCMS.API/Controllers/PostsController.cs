@@ -109,15 +109,24 @@ namespace CodexCMS.API.Controllers
                     return Unauthorized(new { message = "Invalid user token" });
                 }
 
+                // Get default category if none provided
+                int? categoryId = request.CategoryId;
+                if (categoryId == null)
+                {
+                    var defaultCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Slug == "general");
+                    categoryId = defaultCategory?.Id;
+                }
+
                 var post = new Post
                 {
                     Title = request.Title,
                     Content = request.Content,
-                    Excerpt = request.Excerpt ?? request.Content.Substring(0, Math.Min(request.Content.Length, 200)),
+                    Excerpt = request.Excerpt ?? (request.Content.Length > 200 ? request.Content.Substring(0, 200) + "..." : request.Content),
                     Slug = GenerateSlug(request.Title),
                     AuthorId = userId,
-                    CategoryId = request.CategoryId,
+                    CategoryId = categoryId,
                     Status = PostStatus.Published,
+                    PublishedAt = DateTime.UtcNow,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -129,6 +138,9 @@ namespace CodexCMS.API.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"🔴 Post creation error: {ex.Message}");
+                Console.WriteLine($"🔴 Inner exception: {ex.InnerException?.Message}");
+                Console.WriteLine($"🔴 Stack trace: {ex.StackTrace}");
                 return StatusCode(500, new { message = $"Error creating post: {ex.Message}" });
             }
         }

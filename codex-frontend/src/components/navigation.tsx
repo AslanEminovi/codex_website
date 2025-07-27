@@ -44,48 +44,31 @@ export function Navigation() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <div className="flex items-center justify-start gap-2 p-2">
-          <div className="flex flex-col space-y-1 leading-none">
-            <p className="font-medium">{user?.firstName} {user?.lastName}</p>
-            <p className="w-[200px] truncate text-sm text-muted-foreground">
-              {user?.email}
-            </p>
-            <div className="flex gap-1 mt-1">
-              <Badge variant="secondary" className="text-xs">
-                {user?.role}
-              </Badge>
-            </div>
-          </div>
-        </div>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer">
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+          <Link href="/create-post" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Create Post
           </Link>
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem asChild>
-            <Link href="/admin" className="cursor-pointer">
-              <Shield className="mr-2 h-4 w-4" />
-              <span>Admin Dashboard</span>
+            <Link href="/admin" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Admin Panel
             </Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/settings" className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+          <Link href="/settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer text-red-600 focus:text-red-600"
-          onClick={logout}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+        <DropdownMenuItem onClick={logout} className="flex items-center gap-2 text-red-600 focus:text-red-600">
+          <LogOut className="h-4 w-4" />
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
