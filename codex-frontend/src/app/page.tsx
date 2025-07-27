@@ -1,9 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
-import MagicBento from '@/components/MagicBento'
+import Link from 'next/link'
+import { ArrowRight, Sparkles, Zap, Shield, Users, TrendingUp, Edit3, Eye, Calendar, User } from 'lucide-react'
 
 interface Post {
   id: number
@@ -21,11 +21,11 @@ interface Post {
     slug: string
   }
   createdAt: string
-  publishedAt?: string
+  viewCount?: number
 }
 
 export default function HomePage() {
-  const { user, isAdmin } = useAuth()
+  const { user } = useAuth()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -37,7 +37,6 @@ export default function HomePage() {
     try {
       const response = await api.getPosts()
       if (response && Array.isArray(response)) {
-        // Convert API response to our Post interface
         const convertedPosts: Post[] = response.map(post => ({
           id: post.id,
           title: post.title,
@@ -47,9 +46,9 @@ export default function HomePage() {
           author: post.author,
           category: post.category,
           createdAt: post.createdAt,
-          publishedAt: post.publishedAt
+          viewCount: post.viewCount || 0
         }))
-        setPosts(convertedPosts.slice(0, 6)) // Show only 6 posts
+        setPosts(convertedPosts.slice(0, 6))
       }
     } catch {
       // Silently handle error - posts will remain empty array
@@ -58,55 +57,59 @@ export default function HomePage() {
     }
   }
 
-  const handleBlogClick = (blog: { slug?: string }) => {
-    if (blog.slug) {
-      window.location.href = `/blog/${blog.slug}`
-    }
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
   }
 
-  // Convert posts to MagicBento format
-  const convertedBlogs = posts.map(post => ({
-    color: "#ffffff",
-    title: post.title,
-    description: post.excerpt || "Click to read more about this topic",
-    label: post.category?.name || "General",
-    author: `${post.author.firstName || ''} ${post.author.lastName || ''}`.trim() || post.author.username,
-    date: new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
-    }),
-    readTime: "5 min read",
-    category: post.category?.name || "General",
-    slug: post.slug
-  }))
+  const getAuthorName = (author: { username: string; firstName?: string; lastName?: string }) => {
+    return `${author.firstName || ''} ${author.lastName || ''}`.trim() || author.username
+  }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Modern Navigation */}
-      <nav className="nav">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-gradient-to-br from-cyan-400/20 to-blue-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="nav relative z-50">
         <div className="container">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="text-2xl font-bold text-gray-900">
-              CodexCMS
+          <div className="flex items-center justify-between h-20">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-brand rounded-xl flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gradient">CodexCMS</span>
             </Link>
-            <div className="hidden md:flex items-center gap-6">
+
+            <div className="hidden md:flex items-center gap-8">
               <Link href="/" className="nav-link active">Home</Link>
               <Link href="/blog" className="nav-link">Blog</Link>
-              {user && (
-                <Link href="/create-post" className="nav-link">Create Post</Link>
-              )}
+              {user && <Link href="/admin" className="nav-link">Dashboard</Link>}
+            </div>
+
+            <div className="flex items-center gap-4">
               {user ? (
-                <div className="flex items-center gap-4">
-                  {isAdmin && (
-                    <Link href="/admin" className="btn-primary btn-sm">Admin</Link>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                      {user.firstName?.[0] || user.username?.[0] || 'U'}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-white/80 rounded-lg border">
+                    <div className="w-8 h-8 bg-gradient-brand rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-caption">Hi, {user.firstName || user.username}</span>
+                    <span className="text-sm font-medium text-dark-700">
+                      {user.firstName || user.username}
+                    </span>
                   </div>
+                  <Link href="/create-post" className="btn-primary btn-sm">
+                    <Edit3 className="w-4 h-4" />
+                    Create
+                  </Link>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -120,159 +123,202 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="section-lg bg-gradient-to-br from-gray-50 to-white">
+      <section className="section-lg relative z-10">
         <div className="container">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-hero text-gray-900 mb-6">
-              Beautiful Content
-              <span className="block text-primary-600">Made Simple</span>
-            </h1>
-            <p className="text-body-lg max-w-2xl mx-auto mb-8">
-              Create, manage, and publish your content with our modern CMS platform. 
-              Designed for creators who value simplicity and elegance.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              {user ? (
-                <>
-                  <Link href="/create-post" className="btn-primary btn-lg">
-                    Create Your First Post
-                  </Link>
-                  <Link href="/blog" className="btn-secondary btn-lg">
-                    Browse Content
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link href="/register" className="btn-primary btn-lg">
-                    Start Creating
-                  </Link>
-                  <Link href="/blog" className="btn-secondary btn-lg">
-                    Explore Posts
-                  </Link>
-                </>
-              )}
+            <div className="fade-in">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-white/20 mb-8">
+                <Sparkles className="w-4 h-4 text-brand-500" />
+                <span className="text-sm font-medium text-dark-600">Modern Content Management</span>
+              </div>
+              
+              <h1 className="text-hero mb-6">
+                Create Amazing Content
+                <br />
+                <span className="text-accent-500">Effortlessly</span>
+              </h1>
+              
+              <p className="text-subtitle max-w-2xl mx-auto mb-10">
+                The most beautiful and intuitive content management system. 
+                Create, publish, and manage your content with style and simplicity.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+                <Link href={user ? "/create-post" : "/register"} className="btn-primary btn-lg">
+                  {user ? "Start Writing" : "Get Started Free"}
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+                <Link href="/blog" className="btn-secondary btn-lg">
+                  <Eye className="w-5 h-5" />
+                  Explore Content
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="section">
+      <section className="section relative z-10">
         <div className="container">
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <h2 className="text-title-lg text-gray-900 mb-4">
-              Everything you need to create
-            </h2>
-            <p className="text-body-lg">
-              From writing to publishing, our platform handles it all with elegance and simplicity.
+          <div className="text-center mb-16">
+            <h2 className="text-display mb-4">Why Choose CodexCMS?</h2>
+            <p className="text-subtitle max-w-2xl mx-auto">
+              Everything you need to create, manage, and publish amazing content
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="card text-center">
-              <div className="card-content">
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="card group slide-in">
+              <div className="card-content text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Zap className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-title mb-2">Rich Editor</h3>
-                <p className="text-body">Write with a beautiful, distraction-free editor that adapts to your style.</p>
+                <h3 className="text-title mb-3">Lightning Fast</h3>
+                <p className="text-body">
+                  Built with modern technologies for blazing fast performance and seamless user experience.
+                </p>
               </div>
             </div>
-            
-            <div className="card text-center">
-              <div className="card-content">
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+
+            <div className="card group slide-in delay-100">
+              <div className="card-content text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Shield className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-title mb-2">Media Management</h3>
-                <p className="text-body">Upload, organize, and manage your images and files with ease.</p>
+                <h3 className="text-title mb-3">Secure & Reliable</h3>
+                <p className="text-body">
+                  Enterprise-grade security with robust authentication and data protection measures.
+                </p>
               </div>
             </div>
-            
-            <div className="card text-center">
-              <div className="card-content">
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
+
+            <div className="card group slide-in delay-200">
+              <div className="card-content text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-title mb-2">Fast Publishing</h3>
-                <p className="text-body">Publish instantly or schedule your content for the perfect timing.</p>
+                <h3 className="text-title mb-3">Collaborative</h3>
+                <p className="text-body">
+                  Work together with your team, manage permissions, and create content collaboratively.
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Latest Posts Section */}
-      {posts.length > 0 && (
-        <section className="section bg-gray-50">
-          <div className="container">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-title-lg text-gray-900 mb-4">
-                Latest from our blog
-              </h2>
-              <p className="text-body-lg">
-                Discover insights, tutorials, and stories from our community of creators.
-              </p>
+      {/* Latest Posts */}
+      <section className="section relative z-10">
+        <div className="container">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-display mb-2">Latest Posts</h2>
+              <p className="text-body">Discover the newest content from our community</p>
             </div>
+            <Link href="/blog" className="btn-secondary">
+              View All
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
 
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="card">
-                    <div className="card-content">
-                      <div className="skeleton h-4 w-3/4 mb-3 rounded"></div>
-                      <div className="skeleton h-3 w-full mb-2 rounded"></div>
-                      <div className="skeleton h-3 w-2/3 mb-4 rounded"></div>
-                      <div className="skeleton h-3 w-1/2 rounded"></div>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="card">
+                  <div className="card-content">
+                    <div className="skeleton h-6 w-20 rounded mb-4"></div>
+                    <div className="skeleton h-8 w-full rounded mb-3"></div>
+                    <div className="skeleton h-20 w-full rounded mb-4"></div>
+                    <div className="flex items-center gap-3">
+                      <div className="skeleton h-8 w-8 rounded-full"></div>
+                      <div className="skeleton h-4 w-24 rounded"></div>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <MagicBento
-                blogs={convertedBlogs}
-                onCardClick={handleBlogClick}
-                glowColor="var(--primary-500)"
-              />
-            )}
-
-            <div className="text-center mt-12">
-              <Link href="/blog" className="btn-primary">
-                View All Posts
-              </Link>
+                </div>
+              ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : posts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {posts.map((post) => (
+                <Link key={post.id} href={`/blog/${post.slug}`} className="group">
+                  <div className="card h-full">
+                    <div className="card-content">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="px-3 py-1 bg-gradient-brand text-white text-xs font-medium rounded-full">
+                          {post.category?.name || 'General'}
+                        </span>
+                        <div className="flex items-center gap-1 text-dark-400">
+                          <Eye className="w-3 h-3" />
+                          <span className="text-xs">{post.viewCount}</span>
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-title mb-3 group-hover:text-brand-600 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      
+                      <p className="text-body mb-6 line-clamp-3">
+                        {post.excerpt || post.content.substring(0, 150) + '...'}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-gradient-brand rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-dark-700">
+                              {getAuthorName(post.author)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-dark-400">
+                          <Calendar className="w-3 h-3" />
+                          <span className="text-xs">{formatDate(post.createdAt)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-gradient-brand rounded-full flex items-center justify-center mx-auto mb-6 opacity-50">
+                <Edit3 className="w-12 h-12 text-white" />
+              </div>
+              <h3 className="text-title mb-3">No Posts Yet</h3>
+              <p className="text-body mb-6">Be the first to create amazing content!</p>
+              {user && (
+                <Link href="/create-post" className="btn-primary">
+                  Create Your First Post
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* CTA Section */}
       {!user && (
-        <section className="section">
+        <section className="section bg-gradient-hero relative z-10">
           <div className="container">
-            <div className="max-w-4xl mx-auto">
-              <div className="card bg-gradient-to-r from-primary-500 to-primary-600 text-white text-center">
-                <div className="card-content">
-                  <h2 className="text-title-lg mb-4">
-                    Ready to start creating?
-                  </h2>
-                  <p className="text-body-lg text-primary-50 mb-8">
-                    Join thousands of creators who trust CodexCMS for their content needs.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link href="/register" className="btn-secondary">
-                      Create Account
-                    </Link>
-                    <Link href="/login" className="btn-ghost text-white hover:bg-primary-400">
-                      Sign In
-                    </Link>
-                  </div>
-                </div>
+            <div className="max-w-3xl mx-auto text-center text-white">
+              <h2 className="text-display mb-6">Ready to Start Creating?</h2>
+              <p className="text-subtitle mb-8 opacity-90">
+                Join thousands of creators who trust CodexCMS for their content management needs.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link href="/register" className="btn-secondary btn-lg">
+                  <Users className="w-5 h-5" />
+                  Get Started Free
+                </Link>
+                <Link href="/blog" className="btn-ghost btn-lg border-white/20 text-white hover:bg-white/10">
+                  <TrendingUp className="w-5 h-5" />
+                  Explore Content
+                </Link>
               </div>
             </div>
           </div>
@@ -280,32 +326,23 @@ export default function HomePage() {
       )}
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white">
+      <footer className="section-sm bg-dark-800 text-dark-200 relative z-10">
         <div className="container">
-          <div className="section-sm">
-            <div className="text-center">
-              <h3 className="text-title text-white mb-4">CodexCMS</h3>
-              <p className="text-body text-gray-400 mb-6">
-                Beautiful content management made simple.
-              </p>
-              <div className="flex justify-center items-center gap-6">
-                <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">
-                  Blog
-                </Link>
-                <Link href="/login" className="text-gray-400 hover:text-white transition-colors">
-                  Login
-                </Link>
-                {user && isAdmin && (
-                  <Link href="/admin" className="text-gray-400 hover:text-white transition-colors">
-                    Admin
-                  </Link>
-                )}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-gradient-brand rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <div className="border-t border-gray-800 mt-8 pt-6">
-                <p className="text-caption text-gray-500">
-                  © 2024 CodexCMS. Made with ❤️ for creators.
-                </p>
-              </div>
+              <span className="text-lg font-bold text-white">CodexCMS</span>
+            </div>
+            <p className="text-dark-400 mb-6">
+              Beautiful content management made simple.
+            </p>
+            <div className="flex items-center justify-center gap-6 text-sm">
+              <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
+              <Link href="/about" className="hover:text-white transition-colors">About</Link>
+              <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             </div>
           </div>
         </div>

@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+// Avatar components not needed with new design
 import { Badge } from '@/components/ui/badge'
 import { 
   Settings, 
@@ -19,7 +19,11 @@ import {
   Menu,
   PlusCircle,
   BookOpen,
-  Home
+  Home,
+  Sparkles,
+  User,
+  BarChart3,
+  FileText
 } from 'lucide-react'
 import { useState } from 'react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -34,69 +38,85 @@ export function Navigation() {
   ]
 
   if (user) {
-    navItems.push({ href: '/create-post', label: 'Create', icon: PlusCircle })
+    navItems.push(
+      { href: '/create-post', label: 'Create', icon: PlusCircle },
+      { href: '/admin', label: 'Dashboard', icon: BarChart3 }
+    )
   }
 
   const UserMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary-500 text-white font-semibold">
-              {user?.firstName?.[0] || user?.username?.[0] || 'U'}
-            </AvatarFallback>
-          </Avatar>
+        <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0 hover:bg-white/10 transition-all duration-300">
+          <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center ring-2 ring-white/20 group-hover:ring-white/40 transition-all">
+            <User className="w-5 h-5 text-white" />
+          </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 rounded-xl shadow-lg">
-        <div className="flex items-center justify-start gap-2 p-4">
-          <div className="flex flex-col space-y-1 leading-none">
-            <p className="font-semibold text-gray-900">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <p className="w-[200px] truncate text-sm text-gray-500">
-              {user?.email}
-            </p>
-            <div className="flex gap-1 mt-2">
-              <Badge variant="secondary" className="text-xs bg-primary-100 text-primary-700">
-                {user?.role}
-              </Badge>
-              {isAdmin && (
-                <Badge variant="secondary" className="text-xs bg-success-100 text-success-700">
-                  Admin
-                </Badge>
-              )}
+      <DropdownMenuContent className="w-64 bg-white/95 backdrop-blur-lg border border-white/20 shadow-xl rounded-2xl p-2" align="end">
+        <div className="px-4 py-3 bg-gradient-to-r from-brand-50 to-accent-50 rounded-xl mb-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-dark-900 truncate">
+                {user?.firstName || user?.username || 'User'}
+              </p>
+              <p className="text-xs text-dark-600 truncate">
+                {user?.email}
+              </p>
             </div>
           </div>
+          <div className="flex gap-2 mt-3">
+            <Badge variant="secondary" className="text-xs px-2 py-1 bg-brand-100 text-brand-700 border-brand-200">
+              {user?.role}
+            </Badge>
+            {isAdmin && (
+              <Badge variant="secondary" className="text-xs px-2 py-1 bg-accent-100 text-accent-700 border-accent-200">
+                <Shield className="w-3 h-3 mr-1" />
+                Admin
+              </Badge>
+            )}
+          </div>
         </div>
-        <DropdownMenuSeparator className="bg-gray-200" />
+        
         <DropdownMenuItem asChild>
-          <Link href="/create-post" className="flex items-center gap-2 cursor-pointer px-4 py-2 text-gray-700 hover:bg-gray-50">
-            <PlusCircle className="h-4 w-4" />
-            Create Post
+          <Link href="/create-post" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-brand-50 transition-colors">
+            <PlusCircle className="w-4 h-4 text-brand-600" />
+            <span className="font-medium">Create Post</span>
           </Link>
         </DropdownMenuItem>
-        {isAdmin && (
-          <DropdownMenuItem asChild>
-            <Link href="/admin" className="flex items-center gap-2 cursor-pointer px-4 py-2 text-gray-700 hover:bg-gray-50">
-              <Shield className="h-4 w-4" />
-              Admin Panel
-            </Link>
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuSeparator className="bg-gray-200" />
+        
         <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex items-center gap-2 cursor-pointer px-4 py-2 text-gray-700 hover:bg-gray-50">
-            <Settings className="h-4 w-4" />
-            Settings
+          <Link href="/admin" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-brand-50 transition-colors">
+            <BarChart3 className="w-4 h-4 text-brand-600" />
+            <span className="font-medium">Dashboard</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={logout} 
-          className="flex items-center gap-2 cursor-pointer px-4 py-2 text-red-600 hover:bg-red-50 focus:text-red-600"
+        
+        <DropdownMenuItem asChild>
+          <Link href="/blog" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-brand-50 transition-colors">
+            <FileText className="w-4 h-4 text-brand-600" />
+            <span className="font-medium">My Posts</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator className="my-2" />
+        
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-dark-50 transition-colors">
+            <Settings className="w-4 h-4 text-dark-600" />
+            <span className="font-medium">Settings</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem
+          onClick={logout}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors cursor-pointer"
         >
-          <LogOut className="h-4 w-4" />
-          Sign out
+          <LogOut className="w-4 h-4" />
+          <span className="font-medium">Sign Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -105,99 +125,104 @@ export function Navigation() {
   const MobileMenu = () => (
     <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
       <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="md:hidden">
+        <Button variant="ghost" size="sm" className="md:hidden p-2 hover:bg-white/10 rounded-xl transition-all">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-80 bg-white">
+      <SheetContent side="right" className="w-80 bg-white/95 backdrop-blur-lg border-l border-white/20">
         <div className="flex flex-col h-full">
-          <div className="flex items-center gap-2 pb-6 border-b border-gray-200">
-            <Link href="/" className="text-xl font-bold text-gray-900">
-              CodexCMS
-            </Link>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-gradient-brand rounded-xl flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gradient">CodexCMS</span>
           </div>
           
-          <nav className="flex-1 py-6">
-            <div className="space-y-1">
+          <nav className="flex-1">
+            <div className="space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-brand-50 transition-colors group"
                   >
-                    <Icon className="h-5 w-5" />
-                    {item.label}
+                    <Icon className="w-5 h-5 text-brand-600 group-hover:text-brand-700" />
+                    <span className="font-medium text-dark-700 group-hover:text-dark-900">{item.label}</span>
                   </Link>
                 )
               })}
             </div>
-          </nav>
-
-          {user ? (
-            <div className="border-t border-gray-200 pt-6">
-              <div className="flex items-center gap-3 px-3 py-2 mb-4">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary-500 text-white font-semibold">
-                    {user?.firstName?.[0] || user?.username?.[0] || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 truncate">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-sm text-gray-500 truncate">
-                    {user?.email}
-                  </p>
+            
+            {user && (
+              <div className="mt-8 pt-6 border-t border-dark-200">
+                <div className="px-4 py-3 bg-gradient-to-r from-brand-50 to-accent-50 rounded-xl mb-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-dark-900 truncate">
+                        {user?.firstName || user?.username || 'User'}
+                      </p>
+                      <p className="text-xs text-dark-600 truncate">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant="secondary" className="text-xs px-2 py-1 bg-brand-100 text-brand-700 border-brand-200">
+                      {user?.role}
+                    </Badge>
+                    {isAdmin && (
+                      <Badge variant="secondary" className="text-xs px-2 py-1 bg-accent-100 text-accent-700 border-accent-200">
+                        <Shield className="w-3 h-3 mr-1" />
+                        Admin
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Link
+                    href="/settings"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-50 transition-colors"
+                  >
+                    <Settings className="w-5 h-5 text-dark-600" />
+                    <span className="font-medium text-dark-700">Settings</span>
+                  </Link>
+                  
+                  <button
+                    onClick={() => {
+                      logout()
+                      setMobileMenuOpen(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span className="font-medium">Sign Out</span>
+                  </button>
                 </div>
               </div>
-              
-              <div className="space-y-1">
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Shield className="h-5 w-5" />
-                    Admin Panel
-                  </Link>
-                )}
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Settings className="h-5 w-5" />
-                  Settings
-                </Link>
-                <button
-                  onClick={() => {
-                    logout()
-                    setMobileMenuOpen(false)
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut className="h-5 w-5" />
-                  Sign out
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="border-t border-gray-200 pt-6 space-y-2">
+            )}
+          </nav>
+          
+          {!user && (
+            <div className="border-t border-dark-200 pt-6 space-y-3">
               <Link
                 href="/login"
-                className="btn-ghost w-full justify-start"
                 onClick={() => setMobileMenuOpen(false)}
+                className="btn-ghost w-full"
               >
                 Sign In
               </Link>
               <Link
                 href="/register"
-                className="btn-primary w-full justify-start"
                 onClick={() => setMobileMenuOpen(false)}
+                className="btn-primary w-full"
               >
                 Get Started
               </Link>
@@ -211,24 +236,27 @@ export function Navigation() {
   return (
     <nav className="nav">
       <div className="container">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
-            CodexCMS
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-gradient-brand rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gradient">CodexCMS</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => {
+          <div className="hidden md:flex items-center gap-8">
+            {navItems.slice(0, 2).map((item) => {
               const Icon = item.icon
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="nav-link flex items-center gap-2"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-dark-600 hover:text-brand-600 hover:bg-brand-50 transition-all duration-300 group"
                 >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
+                  <Icon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span>{item.label}</span>
                 </Link>
               )
             })}
@@ -238,22 +266,18 @@ export function Navigation() {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-3">
-                {isAdmin && (
-                  <Link href="/admin" className="btn-primary btn-sm flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Admin
+                {user && (
+                  <Link href="/create-post" className="btn-primary btn-sm">
+                    <PlusCircle className="w-4 h-4" />
+                    Create
                   </Link>
                 )}
                 <UserMenu />
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <Link href="/login" className="btn-ghost btn-sm">
-                  Sign In
-                </Link>
-                <Link href="/register" className="btn-primary btn-sm">
-                  Get Started
-                </Link>
+                <Link href="/login" className="btn-ghost btn-sm">Sign In</Link>
+                <Link href="/register" className="btn-primary btn-sm">Get Started</Link>
               </div>
             )}
           </div>
