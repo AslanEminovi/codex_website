@@ -79,14 +79,13 @@ namespace CodexCMS.API.Controllers
 
                 if (result.success)
                 {
-                    // Create a fake token and user response for frontend compatibility
                     return Ok(new
                     {
                         success = true,
-                        token = "fake-token-login-separately",
+                        token = "temp-token-please-login",
                         user = new
                         {
-                            id = 999,
+                            id = 1,
                             username = request.Username,
                             email = request.Email,
                             role = "Author",
@@ -97,14 +96,13 @@ namespace CodexCMS.API.Controllers
                     });
                 }
 
-                Console.WriteLine($"🔴 Registration failed: {result.message}");
                 return BadRequest(new { success = false, message = result.message });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"🔴 Registration exception: {ex.Message}");
                 Console.WriteLine($"🔴 Stack trace: {ex.StackTrace}");
-                return StatusCode(500, new { success = false, message = "An error occurred during registration." });
+                return StatusCode(500, new { success = false, message = $"Registration failed: {ex.Message}" });
             }
         }
 

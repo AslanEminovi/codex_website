@@ -55,11 +55,24 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Database configuration - use SQLite with full path to writable directory
-var sqliteDbPath = Path.Combine("/tmp", "codexcms.db");
-Console.WriteLine($"📁 Using SQLite at: {sqliteDbPath}");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite($"Data Source={sqliteDbPath}"));
+// Database configuration - use PostgreSQL with the connection string you provided
+var connectionString = "postgresql://postgres:tsnNQYCddaolpYWrLGISSrOwCGiyFQWD@tramway.proxy.rlwy.net:39101/railway";
+Console.WriteLine($"🐘 Using PostgreSQL: {connectionString.Substring(0, 30)}...");
+
+try 
+{
+    var uri = new Uri(connectionString);
+    var npgsqlConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Prefer;Trust Server Certificate=true;";
+    
+    Console.WriteLine($"🔗 Connecting to: {uri.Host}:{uri.Port}");
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(npgsqlConnectionString));
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"❌ PostgreSQL connection failed: {ex.Message}");
+    throw; // Don't fall back, just fail hard so we know what's wrong
+}
 
 // JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
