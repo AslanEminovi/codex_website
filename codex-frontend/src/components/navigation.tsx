@@ -105,7 +105,7 @@ export function Navigation() {
   const MobileMenu = () => (
     <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="md-hidden">
+                  <Button variant="ghost" size="sm" className="md:hidden">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
@@ -218,7 +218,7 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md-flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-6">
             {navItems.map((item) => {
               const Icon = item.icon
               return (
@@ -235,7 +235,7 @@ export function Navigation() {
           </div>
 
           {/* Desktop Auth */}
-          <div className="hidden md-flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-3">
                 {isAdmin && (

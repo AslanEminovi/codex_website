@@ -174,7 +174,7 @@ export default function EditPostPage() {
             <Link href="/" className="text-2xl font-bold text-gray-900">
               CodexCMS
             </Link>
-            <div className="hidden md-flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-8">
               <Link href="/" className="nav-link">Home</Link>
               <Link href="/blog" className="nav-link">Blog</Link>
               <Link href="/create-post" className="nav-link">Create Post</Link>
@@ -264,7 +264,7 @@ export default function EditPostPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md-grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
                         Status

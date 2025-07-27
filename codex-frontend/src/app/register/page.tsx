@@ -87,8 +87,8 @@ export default function RegisterPage() {
   // Show loading state during hydration
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="w-full max-w-lg">
+              <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+          <div className="w-full max-w-xl">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">CodexCMS</h1>
@@ -120,8 +120,8 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-xl">
           <div className="card text-center">
             <div className="card-content">
               <div className="w-16 h-16 bg-success-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -149,8 +149,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="w-full max-w-xl">
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">

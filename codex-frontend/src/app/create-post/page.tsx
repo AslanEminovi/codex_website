@@ -81,8 +81,8 @@ export default function CreatePostPage() {
                 <Link href="/" className="text-xl font-bold text-gray-900">
                   CodexCMS
                 </Link>
-                <div className="hidden md-block w-px h-6 bg-gray-300"></div>
-                <h1 className="hidden md-block text-gray-600">Create New Post</h1>
+                <div className="hidden md:block w-px h-6 bg-gray-300"></div>
+                <h1 className="hidden md:block text-gray-600">Create New Post</h1>
               </div>
             </div>
           </div>
@@ -155,8 +155,8 @@ export default function CreatePostPage() {
               <Link href="/" className="text-xl font-bold text-gray-900">
                 CodexCMS
               </Link>
-              <div className="hidden md-block w-px h-6 bg-gray-300"></div>
-              <h1 className="hidden md-block text-gray-600">Create New Post</h1>
+              <div className="hidden md:block w-px h-6 bg-gray-300"></div>
+              <h1 className="hidden md:block text-gray-600">Create New Post</h1>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/blog" className="btn-ghost btn-sm">

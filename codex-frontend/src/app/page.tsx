@@ -90,7 +90,7 @@ export default function HomePage() {
             <Link href="/" className="text-2xl font-bold text-gray-900">
               CodexCMS
             </Link>
-            <div className="hidden md-flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-6">
               <Link href="/" className="nav-link active">Home</Link>
               <Link href="/blog" className="nav-link">Blog</Link>
               {user && (

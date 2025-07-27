@@ -58,8 +58,8 @@ export default function LoginPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-lg">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">CodexCMS</h1>
@@ -86,8 +86,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
