@@ -46,7 +46,7 @@ export default function CreatePostPage() {
         title: formData.title,
         content: formData.content,
         excerpt: formData.excerpt || undefined,
-        category: formData.categoryId ? { id: formData.categoryId, name: '', slug: '' } : undefined
+        categoryId: formData.categoryId || undefined
       })
       
       if (response) {

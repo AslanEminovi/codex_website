@@ -32,6 +32,13 @@ export interface Post {
   }>
 }
 
+export interface CreatePostRequest {
+  title: string
+  content: string
+  excerpt?: string
+  categoryId?: number
+}
+
 export interface ApiResponse<T> {
   data: T
   pagination?: {
@@ -199,7 +206,7 @@ class ApiClient {
     return this.request<Post[]>(`/posts/featured?limit=${limit}`)
   }
 
-  async createPost(postData: Partial<Post>): Promise<{ success: boolean; data: { id: number; slug: string } }> {
+  async createPost(postData: CreatePostRequest): Promise<{ success: boolean; data: { id: number; slug: string } }> {
     return this.request('/posts', {
       method: 'POST',
       body: JSON.stringify(postData),
