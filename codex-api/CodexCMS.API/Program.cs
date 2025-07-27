@@ -160,7 +160,7 @@ builder.Logging.AddConsole();
 // Build the app
 var app = builder.Build();
 
-// Initialize database on startup
+// AGGRESSIVE Database initialization on startup
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -168,46 +168,108 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
-        logger.LogInformation("🔄 Ensuring database is created...");
-        await context.Database.EnsureCreatedAsync();
-        logger.LogInformation("✅ Database ensured");
+        logger.LogInformation("🔄 AGGRESSIVE database initialization...");
         
-        // Seed basic data if tables are empty
-        if (!await context.Categories.AnyAsync())
+        // First try to connect to database
+        var canConnect = await context.Database.CanConnectAsync();
+        logger.LogInformation($"Database connection: {canConnect}");
+        
+        if (canConnect)
         {
-            logger.LogInformation("🌱 Seeding basic categories...");
-            var generalCategory = new Category
+            // Try EnsureCreated first
+            var created = await context.Database.EnsureCreatedAsync();
+            logger.LogInformation($"EnsureCreated result: {created}");
+            
+            // If that didn't work, try raw SQL to create tables
+            try
             {
-                Name = "General",
-                Slug = "general",
-                Description = "General posts",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            context.Categories.Add(generalCategory);
-            await context.SaveChangesAsync();
-            logger.LogInformation("✅ Categories seeded");
+                await context.Database.ExecuteSqlRawAsync(@"
+                    CREATE TABLE IF NOT EXISTS ""Users"" (
+                        ""Id"" SERIAL PRIMARY KEY,
+                        ""Username"" VARCHAR(100) NOT NULL UNIQUE,
+                        ""Email"" VARCHAR(255) NOT NULL UNIQUE,
+                        ""PasswordHash"" TEXT NOT NULL,
+                        ""FirstName"" VARCHAR(255),
+                        ""LastName"" VARCHAR(255),
+                        ""Role"" INTEGER NOT NULL DEFAULT 2,
+                        ""IsActive"" BOOLEAN NOT NULL DEFAULT TRUE,
+                        ""CreatedAt"" TIMESTAMP NOT NULL DEFAULT NOW(),
+                        ""LastLoginAt"" TIMESTAMP
+                    );
+                    
+                    CREATE TABLE IF NOT EXISTS ""Categories"" (
+                        ""Id"" SERIAL PRIMARY KEY,
+                        ""Name"" VARCHAR(255) NOT NULL,
+                        ""Slug"" VARCHAR(255) NOT NULL UNIQUE,
+                        ""Description"" TEXT,
+                        ""IsActive"" BOOLEAN NOT NULL DEFAULT TRUE,
+                        ""ParentCategoryId"" INTEGER,
+                        ""DisplayOrder"" INTEGER DEFAULT 0,
+                        ""CreatedAt"" TIMESTAMP NOT NULL DEFAULT NOW(),
+                        ""UpdatedAt"" TIMESTAMP NOT NULL DEFAULT NOW()
+                    );
+                    
+                    CREATE TABLE IF NOT EXISTS ""Posts"" (
+                        ""Id"" SERIAL PRIMARY KEY,
+                        ""Title"" VARCHAR(200) NOT NULL,
+                        ""Slug"" VARCHAR(200) NOT NULL UNIQUE,
+                        ""Content"" TEXT NOT NULL,
+                        ""Excerpt"" VARCHAR(500),
+                        ""FeaturedImageUrl"" TEXT,
+                        ""MetaTitle"" TEXT,
+                        ""MetaDescription"" TEXT,
+                        ""Status"" INTEGER NOT NULL DEFAULT 0,
+                        ""PublishedAt"" TIMESTAMP,
+                        ""ScheduledAt"" TIMESTAMP,
+                        ""ViewCount"" INTEGER DEFAULT 0,
+                        ""AllowComments"" BOOLEAN DEFAULT TRUE,
+                        ""IsFeatured"" BOOLEAN DEFAULT FALSE,
+                        ""CreatedAt"" TIMESTAMP NOT NULL DEFAULT NOW(),
+                        ""UpdatedAt"" TIMESTAMP NOT NULL DEFAULT NOW(),
+                        ""AuthorId"" INTEGER NOT NULL,
+                        ""CategoryId"" INTEGER,
+                        FOREIGN KEY (""AuthorId"") REFERENCES ""Users""(""Id""),
+                        FOREIGN KEY (""CategoryId"") REFERENCES ""Categories""(""Id"")
+                    );
+                ");
+                logger.LogInformation("✅ SQL tables created manually");
+            }
+            catch (Exception sqlEx)
+            {
+                logger.LogWarning($"Manual SQL creation warning: {sqlEx.Message}");
+            }
+            
+            // Seed essential data
+            var hasUsers = await context.Database.ExecuteSqlRawAsync("SELECT COUNT(*) FROM \"Users\"") >= 0;
+            var hasCategories = await context.Database.ExecuteSqlRawAsync("SELECT COUNT(*) FROM \"Categories\"") >= 0;
+            
+            if (hasCategories)
+            {
+                await context.Database.ExecuteSqlRawAsync(@"
+                    INSERT INTO ""Categories"" (""Name"", ""Slug"", ""Description"", ""IsActive"", ""CreatedAt"", ""UpdatedAt"")
+                    SELECT 'General', 'general', 'General posts', TRUE, NOW(), NOW()
+                    WHERE NOT EXISTS (SELECT 1 FROM ""Categories"" WHERE ""Slug"" = 'general');
+                    
+                    INSERT INTO ""Categories"" (""Name"", ""Slug"", ""Description"", ""IsActive"", ""CreatedAt"", ""UpdatedAt"")
+                    SELECT 'Technology', 'technology', 'Technology posts', TRUE, NOW(), NOW()
+                    WHERE NOT EXISTS (SELECT 1 FROM ""Categories"" WHERE ""Slug"" = 'technology');
+                ");
+                logger.LogInformation("✅ Categories seeded via SQL");
+            }
+            
+            if (hasUsers)
+            {
+                await context.Database.ExecuteSqlRawAsync(@"
+                    INSERT INTO ""Users"" (""Username"", ""Email"", ""FirstName"", ""LastName"", ""PasswordHash"", ""Role"", ""IsActive"", ""CreatedAt"")
+                    SELECT 'admin', 'eminoviaslan@gmail.com', 'Aslan', 'Eminovi', '$2a$11$A8kNyJ8D6Hd2KzGFW.vEXO8Dv3pNqF0pQpZtYeWqF.HkGfDkXpNyK', 0, TRUE, NOW()
+                    WHERE NOT EXISTS (SELECT 1 FROM ""Users"" WHERE ""Email"" = 'eminoviaslan@gmail.com');
+                ");
+                logger.LogInformation("✅ Admin user seeded via SQL");
+            }
         }
-        
-        // Create admin user if doesn't exist
-        if (!await context.Users.AnyAsync(u => u.Email == "eminoviaslan@gmail.com"))
+        else
         {
-            logger.LogInformation("🌱 Creating admin user...");
-            var adminUser = new User
-            {
-                Username = "admin",
-                Email = "eminoviaslan@gmail.com",
-                FirstName = "Aslan",
-                LastName = "Eminovi",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
-                Role = UserRole.Admin,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-            context.Users.Add(adminUser);
-            await context.SaveChangesAsync();
-            logger.LogInformation("✅ Admin user created");
+            logger.LogError("❌ Cannot connect to database");
         }
     }
     catch (Exception ex)
