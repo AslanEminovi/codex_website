@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
@@ -29,6 +28,12 @@ export default function RegisterPage() {
     setError('')
 
     // Validation
+    if (!formData.firstName || !formData.lastName || !formData.username || !formData.email || !formData.password) {
+      setError('Please fill in all fields')
+      setLoading(false)
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       setLoading(false)
@@ -37,6 +42,14 @@ export default function RegisterPage() {
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long')
+      setLoading(false)
+      return
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address')
       setLoading(false)
       return
     }
@@ -52,42 +65,42 @@ export default function RegisterPage() {
       
       if (success) {
         setSuccess(true)
-        // Remove automatic redirect - let user click login button
       } else {
         setError('Registration failed. Please try again.')
       }
-      
-    } catch {
-      setError('Registration failed. Please try again.')
+    } catch (error) {
+      setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }))
+    setError('') // Clear error when user types
   }
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-full max-w-lg">
           <div className="card">
-            <div className="card-content" style={{ minHeight: '500px' }}>
+            <div className="card-content">
               <div className="animate-pulse space-y-4">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="skeleton h-4 w-3/4 rounded"></div>
                 <div className="flex space-x-4">
-                  <div className="h-10 bg-gray-200 rounded flex-1"></div>
-                  <div className="h-10 bg-gray-200 rounded flex-1"></div>
+                  <div className="skeleton h-12 rounded flex-1"></div>
+                  <div className="skeleton h-12 rounded flex-1"></div>
                 </div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-12 bg-gray-200 rounded"></div>
+                <div className="skeleton h-12 w-full rounded"></div>
+                <div className="skeleton h-12 w-full rounded"></div>
+                <div className="skeleton h-12 w-full rounded"></div>
+                <div className="skeleton h-12 w-full rounded"></div>
+                <div className="skeleton h-12 w-full rounded"></div>
               </div>
             </div>
           </div>
@@ -98,21 +111,27 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="card">
-            <div className="card-content text-center">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="card text-center">
+            <div className="card-content">
+              <div className="w-16 h-16 bg-success-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created!</h2>
-              <p className="text-gray-600 mb-4">Your account has been successfully created.</p>
-              <p className="text-sm text-gray-500 mb-4">Please login with your credentials.</p>
-              <Link href="/login" className="btn btn-primary inline-block">
-                Go to Login
+              <h2 className="text-title-lg text-gray-900 mb-4">Account Created!</h2>
+              <p className="text-body text-gray-600 mb-6">
+                Your account has been successfully created. You can now sign in and start creating.
+              </p>
+              <Link href="/login" className="btn-primary">
+                Sign In to Your Account
               </Link>
+              <div className="mt-6">
+                <Link href="/" className="text-caption text-gray-500 hover:text-gray-700">
+                  ← Back to Home
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -121,22 +140,23 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+      <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-gray-900 mb-4 block">
-            CodexCMS
+          <Link href="/" className="inline-block">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">CodexCMS</h1>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-          <p className="text-gray-600">Join CodexCMS and start creating content</p>
+          <h2 className="text-title text-gray-900 mb-2">Create your account</h2>
+          <p className="text-body text-gray-600">
+            Join our community of creators and start publishing
+          </p>
         </div>
 
         {/* Register Card */}
         <div className="card">
-          <div className="card-content" style={{ minHeight: '500px' }}>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="card-content">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Error Message */}
               {error && (
                 <div className="alert alert-error">
@@ -144,9 +164,10 @@ export default function RegisterPage() {
                 </div>
               )}
 
+              {/* Name Fields */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="form-group">
+                  <label htmlFor="firstName" className="form-label">
                     First Name
                   </label>
                   <input
@@ -157,11 +178,12 @@ export default function RegisterPage() {
                     onChange={handleInputChange}
                     placeholder="John"
                     required
-                    className="input"
+                    className="form-input"
+                    autoComplete="given-name"
                   />
                 </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="form-group">
+                  <label htmlFor="lastName" className="form-label">
                     Last Name
                   </label>
                   <input
@@ -172,13 +194,15 @@ export default function RegisterPage() {
                     onChange={handleInputChange}
                     placeholder="Doe"
                     required
-                    className="input"
+                    className="form-input"
+                    autoComplete="family-name"
                   />
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+              {/* Username Field */}
+              <div className="form-group">
+                <label htmlFor="username" className="form-label">
                   Username
                 </label>
                 <input
@@ -189,13 +213,15 @@ export default function RegisterPage() {
                   onChange={handleInputChange}
                   placeholder="johndoe"
                   required
-                  className="input"
+                  className="form-input"
+                  autoComplete="username"
                 />
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+              {/* Email Field */}
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -205,69 +231,96 @@ export default function RegisterPage() {
                   onChange={handleInputChange}
                   placeholder="john@example.com"
                   required
-                  className="input"
+                  className="form-input"
+                  autoComplete="email"
                 />
               </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Create a strong password"
-                  required
-                  className="input"
-                />
+              {/* Password Fields */}
+              <div className="grid grid-cols-1 gap-4">
+                <div className="form-group">
+                  <label htmlFor="password" className="form-label">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Choose a strong password"
+                    required
+                    className="form-input"
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="confirmPassword" className="form-label">
+                    Confirm Password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="Confirm your password"
+                    required
+                    className="form-input"
+                    autoComplete="new-password"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  placeholder="Confirm your password"
-                  required
-                  className="input"
-                />
+              {/* Terms */}
+              <div className="flex items-start">
+                <input type="checkbox" className="mt-1 mr-3" required />
+                <p className="text-caption text-gray-600">
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-primary-600 hover:text-primary-700">
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" className="text-primary-600 hover:text-primary-700">
+                    Privacy Policy
+                  </Link>
+                </p>
               </div>
 
-              <div className="space-y-4">
-                <button 
-                  type="submit" 
-                  className="btn btn-primary w-full" 
-                  disabled={loading}
-                >
-                  {loading ? 'Creating account...' : 'Create Account'}
-                </button>
-                
-                <Link 
-                  href="/login"
-                  className="btn btn-secondary w-full block text-center"
-                >
-                  Already Have an Account? Sign In
-                </Link>
-              </div>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creating Account...
+                  </div>
+                ) : (
+                  'Create Account'
+                )}
+              </button>
             </form>
 
-            <div className="mt-6 text-center border-t pt-6">
-              <p className="text-sm text-gray-600">
+            {/* Footer */}
+            <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+              <p className="text-body text-gray-600">
                 Already have an account?{' '}
-                <Link href="/login" className="font-medium text-gray-900 hover:text-gray-700">
-                  Sign in
+                <Link href="/login" className="font-semibold text-primary-600 hover:text-primary-700">
+                  Sign In
                 </Link>
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Back to Home */}
+        <div className="text-center mt-6">
+          <Link href="/" className="text-caption text-gray-500 hover:text-gray-700">
+            ← Back to Home
+          </Link>
         </div>
       </div>
     </div>

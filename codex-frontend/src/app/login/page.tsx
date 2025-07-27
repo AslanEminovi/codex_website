@@ -1,8 +1,7 @@
 'use client'
-
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth'
 
 export default function LoginPage() {
@@ -11,9 +10,9 @@ export default function LoginPage() {
     usernameOrEmail: '',
     password: ''
   })
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
+  const [loading, setLoading] = useState(false)
+  
   const router = useRouter()
   const { login } = useAuth()
 
@@ -21,10 +20,26 @@ export default function LoginPage() {
     setMounted(true)
   }, [])
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    setError('') // Clear error when user types
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // Basic validation
+    if (!formData.usernameOrEmail || !formData.password) {
+      setError('Please fill in all fields')
+      setLoading(false)
+      return
+    }
 
     try {
       const success = await login(formData.usernameOrEmail, formData.password)
@@ -32,34 +47,27 @@ export default function LoginPage() {
       if (success) {
         router.push('/')
       } else {
-        setError('Invalid username/email or password.')
+        setError('Invalid username/email or password')
       }
-    } catch {
-      setError('Login failed. Please try again.')
+    } catch (error) {
+      setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
-  }
-
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-full max-w-md">
           <div className="card">
-            <div className="card-content" style={{ minHeight: '400px' }}>
+            <div className="card-content">
               <div className="animate-pulse space-y-4">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-12 bg-gray-200 rounded"></div>
+                <div className="skeleton h-4 w-3/4 rounded"></div>
+                <div className="skeleton h-12 w-full rounded"></div>
+                <div className="skeleton h-4 w-1/2 rounded"></div>
+                <div className="skeleton h-12 w-full rounded"></div>
+                <div className="skeleton h-12 w-full rounded"></div>
               </div>
             </div>
           </div>
@@ -69,21 +77,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-gray-900 mb-4 block">
-            CodexCMS
+          <Link href="/" className="inline-block">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">CodexCMS</h1>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your account</p>
+          <h2 className="text-title text-gray-900 mb-2">Welcome back</h2>
+          <p className="text-body text-gray-600">
+            Sign in to your account to continue creating
+          </p>
         </div>
 
         {/* Login Card */}
         <div className="card">
-          <div className="card-content" style={{ minHeight: '400px' }}>
-            
+          <div className="card-content">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Error Message */}
               {error && (
@@ -92,8 +101,9 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <div>
-                <label htmlFor="usernameOrEmail" className="block text-sm font-medium text-gray-700 mb-2">
+              {/* Username/Email Field */}
+              <div className="form-group">
+                <label htmlFor="usernameOrEmail" className="form-label">
                   Username or Email
                 </label>
                 <input
@@ -104,12 +114,14 @@ export default function LoginPage() {
                   onChange={handleInputChange}
                   placeholder="Enter your username or email"
                   required
-                  className="input"
+                  className="form-input"
+                  autoComplete="username"
                 />
               </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              {/* Password Field */}
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
                   Password
                 </label>
                 <input
@@ -120,47 +132,56 @@ export default function LoginPage() {
                   onChange={handleInputChange}
                   placeholder="Enter your password"
                   required
-                  className="input"
+                  className="form-input"
+                  autoComplete="current-password"
                 />
               </div>
 
-              <div className="flex items-center justify-between text-sm">
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input type="checkbox" className="mr-2" />
-                  Remember me
+                  <span className="text-caption">Remember me</span>
                 </label>
-                <Link href="/forgot-password" className="text-gray-900 hover:text-gray-700">
+                <Link href="/forgot-password" className="text-caption text-primary-600 hover:text-primary-700">
                   Forgot password?
                 </Link>
               </div>
 
-              <div className="space-y-4">
-                <button 
-                  type="submit" 
-                  className="btn btn-primary w-full" 
-                  disabled={loading}
-                >
-                  {loading ? 'Signing in...' : 'Sign In'}
-                </button>
-                
-                <Link 
-                  href="/register"
-                  className="btn btn-secondary w-full block text-center"
-                >
-                  Create New Account
-                </Link>
-              </div>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Signing in...
+                  </div>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
             </form>
 
-            <div className="mt-6 text-center border-t pt-6">
-              <p className="text-sm text-gray-600">
-                Need help? Contact support or{' '}
-                <Link href="/" className="font-medium text-gray-900 hover:text-gray-700">
-                  return to homepage
+            {/* Footer */}
+            <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+              <p className="text-body text-gray-600">
+                Don't have an account?{' '}
+                <Link href="/register" className="font-semibold text-primary-600 hover:text-primary-700">
+                  Create Account
                 </Link>
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Back to Home */}
+        <div className="text-center mt-6">
+          <Link href="/" className="text-caption text-gray-500 hover:text-gray-700">
+            ← Back to Home
+          </Link>
         </div>
       </div>
     </div>
