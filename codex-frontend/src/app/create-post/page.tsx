@@ -164,7 +164,7 @@ export default function CreatePostPage() {
             </div>
 
             <div className="card">
-              <div className="card-content">
+              <div className="card-content" style={{ minHeight: '600px' }}>
                 {error && (
                   <div className="alert alert-error">
                     {error}

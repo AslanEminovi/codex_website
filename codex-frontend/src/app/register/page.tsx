@@ -76,7 +76,7 @@ export default function RegisterPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="card">
-            <div className="card-content">
+            <div className="card-content" style={{ minHeight: '500px' }}>
               <div className="animate-pulse space-y-4">
                 <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                 <div className="flex space-x-4">
@@ -134,7 +134,7 @@ export default function RegisterPage() {
 
         {/* Register Card */}
         <div className="card">
-          <div className="card-content">
+          <div className="card-content" style={{ minHeight: '500px' }}>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Error Message */}
