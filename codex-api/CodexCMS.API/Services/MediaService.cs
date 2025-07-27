@@ -86,13 +86,14 @@ namespace CodexCMS.API.Services
             return fileName;
         }
 
-        public async Task DeleteFileAsync(string filePath)
+        public Task DeleteFileAsync(string filePath)
         {
             var fullPath = Path.Combine(_environment.WebRootPath, "uploads", filePath);
             if (File.Exists(fullPath))
             {
                 File.Delete(fullPath);
             }
+            return Task.CompletedTask;
         }
 
         public async Task<IEnumerable<Media>> GetMediaByUserAsync(int userId)

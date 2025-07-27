@@ -182,7 +182,7 @@ namespace CodexCMS.API.Controllers
                     lastLoginAt = user.LastLoginAt
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { success = false, message = "An error occurred." });
             }

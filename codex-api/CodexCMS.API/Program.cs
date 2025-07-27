@@ -8,6 +8,12 @@ using CodexCMS.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using CodexCMS.Core.Models;
 
+// Request DTOs
+public record LoginRequest(string Email, string Password);
+public record RegisterRequest(string Username, string Email, string Password, string FirstName, string LastName);
+public record CreatePostRequest(string Title, string Content, string? Excerpt, int? CategoryId);
+public record UpdateUserRoleRequest(UserRole Role);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure port for Railway deployment
@@ -596,104 +602,6 @@ app.MapDelete("/admin/users/{id}", async (int id, ApplicationDbContext context) 
     catch (Exception ex)
     {
         return Results.BadRequest(new { error = ex.Message });
-    }
-});
-
-// Database initialization
-Task.Run(async () =>
-{
-    try 
-    {
-        await Task.Delay(5000); // Wait for app to start
-        Console.WriteLine("🚀 Starting database initialization...");
-        
-        using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        
-        // Test connection
-        var canConnect = await context.Database.CanConnectAsync();
-        Console.WriteLine($"📡 Can connect to database: {canConnect}");
-        
-        if (!canConnect)
-        {
-            Console.WriteLine("❌ Cannot connect to database");
-            return;
-        }
-        
-        // ENSURE DATABASE AND TABLES ARE CREATED
-        Console.WriteLine("🔨 Creating database and tables...");
-        await context.Database.EnsureCreatedAsync();
-        
-        // Also run migrations as backup
-        try 
-        {
-            await context.Database.MigrateAsync();
-            Console.WriteLine("✅ Database migrations applied");
-        }
-        catch (Exception migEx)
-        {
-            Console.WriteLine($"⚠️ Migration warning: {migEx.Message}");
-        }
-        
-        // Initialize data
-        await CodexCMS.API.Helpers.SeedData.InitializeAsync(context);
-        Console.WriteLine("✅ Database initialization completed successfully!");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Database initialization failed: {ex.Message}");
-        Console.WriteLine($"❌ Stack trace: {ex.StackTrace}");
-    }
-});
-
-// Database connection test endpoint
-app.MapGet("/test-db", async () =>
-{
-    try
-    {
-        var connectionString = $"Data Source=/tmp/codexcms.db";
-        Console.WriteLine($"Testing connection string: {connectionString}");
-        
-        // Test raw SQLite connection
-        using (var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString))
-        {
-            await connection.OpenAsync();
-            Console.WriteLine("✅ Raw SQLite connection successful");
-            
-            // Test creating a simple table
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = "CREATE TABLE IF NOT EXISTS TestTable (id INTEGER PRIMARY KEY, name TEXT)";
-                await command.ExecuteNonQueryAsync();
-                Console.WriteLine("✅ Table creation successful");
-            }
-            
-            // Test inserting data
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = "INSERT INTO TestTable (name) VALUES ('test')";
-                await command.ExecuteNonQueryAsync();
-                Console.WriteLine("✅ Data insertion successful");
-            }
-            
-            connection.Close();
-        }
-        
-        return Results.Ok(new { 
-            success = true, 
-            message = "Raw SQLite connection test passed",
-            path = "/tmp/codexcms.db"
-        });
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Database test failed: {ex.Message}");
-        Console.WriteLine($"❌ Stack trace: {ex.StackTrace}");
-        return Results.BadRequest(new { 
-            success = false, 
-            error = ex.Message,
-            stackTrace = ex.StackTrace
-        });
     }
 });
 
