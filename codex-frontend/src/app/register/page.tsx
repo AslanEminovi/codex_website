@@ -55,9 +55,7 @@ export default function RegisterPage() {
       
       if (success) {
         setSuccess(true)
-        setTimeout(() => {
-          router.push('/')
-        }, 2000)
+        // Remove automatic redirect - let user click login button
       } else {
         setError('Registration failed. Please try again.')
       }
@@ -114,7 +112,10 @@ export default function RegisterPage() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created!</h2>
               <p className="text-gray-600 mb-4">Your account has been successfully created.</p>
-              <p className="text-sm text-gray-500">Redirecting to homepage...</p>
+              <p className="text-sm text-gray-500 mb-4">Please login with your credentials.</p>
+              <Link href="/login" className="btn btn-primary inline-block">
+                Go to Login
+              </Link>
             </div>
           </div>
         </div>

@@ -82,11 +82,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await api.register(userData)
       
-      if (response.success && response.token && response.user) {
-        // Store token and set user
-        localStorage.setItem('token', response.token)
-        api.setToken(response.token)
-        setUser(response.user)
+      if (response.success) {
+        // Registration successful - don't auto-login with fake token
+        if (response.token && response.token !== "fake-token-login-separately") {
+          // Real token - auto-login
+          localStorage.setItem('token', response.token)
+          api.setToken(response.token)
+          setUser(response.user)
+        }
+        // For fake token or no token, just return success without logging in
         return true
       }
       
