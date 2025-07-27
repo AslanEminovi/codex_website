@@ -5,6 +5,8 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using CodexCMS.Data;
 using CodexCMS.API.Services;
+using Microsoft.AspNetCore.Mvc;
+using CodexCMS.Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -285,6 +287,103 @@ app.MapGet("/debug/users", async (ApplicationDbContext context) =>
             userCount = users.Count,
             users = users
         });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+// Admin setup endpoint - make specific user admin
+app.MapPost("/admin/setup", async (ApplicationDbContext context) =>
+{
+    try
+    {
+        // Make eminoviaslan@gmail.com admin
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == "eminoviaslan@gmail.com");
+        if (user != null)
+        {
+            user.Role = UserRole.Admin;
+            await context.SaveChangesAsync();
+            return Results.Ok(new { success = true, message = $"User {user.Email} is now admin" });
+        }
+        
+        return Results.NotFound(new { success = false, message = "User not found" });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { success = false, error = ex.Message });
+    }
+});
+
+// Get all users for admin management
+app.MapGet("/admin/users", async (ApplicationDbContext context) =>
+{
+    try
+    {
+        var users = await context.Users.Select(u => new { 
+            u.Id, 
+            u.Username, 
+            u.Email, 
+            u.FirstName,
+            u.LastName,
+            u.Role,
+            u.IsActive,
+            u.CreatedAt,
+            u.LastLoginAt
+        }).ToListAsync();
+        
+        return Results.Ok(users);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+// Update user role (admin only)
+app.MapPut("/admin/users/{id}/role", async (int id, [FromBody] UpdateUserRoleRequest request, ApplicationDbContext context) =>
+{
+    try
+    {
+        var user = await context.Users.FindAsync(id);
+        if (user == null)
+        {
+            return Results.NotFound(new { message = "User not found" });
+        }
+        
+        user.Role = request.Role;
+        await context.SaveChangesAsync();
+        
+        return Results.Ok(new { success = true, message = $"User role updated to {request.Role}" });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+// Delete user (admin only)
+app.MapDelete("/admin/users/{id}", async (int id, ApplicationDbContext context) =>
+{
+    try
+    {
+        var user = await context.Users.FindAsync(id);
+        if (user == null)
+        {
+            return Results.NotFound(new { message = "User not found" });
+        }
+        
+        // Don't allow deleting the main admin
+        if (user.Email == "eminoviaslan@gmail.com")
+        {
+            return Results.BadRequest(new { message = "Cannot delete main admin user" });
+        }
+        
+        context.Users.Remove(user);
+        await context.SaveChangesAsync();
+        
+        return Results.Ok(new { success = true, message = "User deleted successfully" });
     }
     catch (Exception ex)
     {

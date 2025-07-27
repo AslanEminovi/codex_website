@@ -133,6 +133,132 @@ namespace CodexCMS.API.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePost(int id, [FromBody] CreatePostRequest request)
+        {
+            try
+            {
+                var post = await _context.Posts.FindAsync(id);
+                if (post == null)
+                {
+                    return NotFound(new { message = "Post not found" });
+                }
+
+                // Get current user ID and role from JWT token
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role);
+                
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    return Unauthorized(new { message = "Invalid user token" });
+                }
+
+                // Only allow post author or admin to edit
+                if (post.AuthorId != userId && roleClaim?.Value != "Admin")
+                {
+                    return Forbid("You can only edit your own posts");
+                }
+
+                post.Title = request.Title;
+                post.Content = request.Content;
+                post.Excerpt = request.Excerpt ?? request.Content.Substring(0, Math.Min(request.Content.Length, 200));
+                post.Slug = GenerateSlug(request.Title);
+                post.CategoryId = request.CategoryId;
+                post.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Post updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error updating post: {ex.Message}" });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeletePost(int id)
+        {
+            try
+            {
+                var post = await _context.Posts.FindAsync(id);
+                if (post == null)
+                {
+                    return NotFound(new { message = "Post not found" });
+                }
+
+                // Get current user ID and role from JWT token
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role);
+                
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    return Unauthorized(new { message = "Invalid user token" });
+                }
+
+                // Only allow post author or admin to delete
+                if (post.AuthorId != userId && roleClaim?.Value != "Admin")
+                {
+                    return Forbid("You can only delete your own posts");
+                }
+
+                _context.Posts.Remove(post);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Post deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error deleting post: {ex.Message}" });
+            }
+        }
+
+        [HttpGet("admin/all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllPostsForAdmin([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var posts = await _context.Posts
+                    .Include(p => p.Author)
+                    .Include(p => p.Category)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new
+                    {
+                        p.Id,
+                        p.Title,
+                        p.Content,
+                        p.Excerpt,
+                        p.Slug,
+                        p.Status,
+                        p.CreatedAt,
+                        p.UpdatedAt,
+                        Author = new { p.Author.Username, p.Author.FirstName, p.Author.LastName },
+                        Category = p.Category != null ? new { p.Category.Name, p.Category.Slug } : null
+                    })
+                    .ToListAsync();
+
+                var totalPosts = await _context.Posts.CountAsync();
+
+                return Ok(new
+                {
+                    posts,
+                    totalPosts,
+                    currentPage = page,
+                    pageSize,
+                    totalPages = (int)Math.Ceiling((double)totalPosts / pageSize)
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error getting posts: {ex.Message}" });
+            }
+        }
+
         private string GenerateSlug(string title)
         {
             return title.ToLower()
