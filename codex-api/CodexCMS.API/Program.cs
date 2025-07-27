@@ -289,6 +289,33 @@ app.UseSwaggerUI(c =>
 // Enable CORS
 app.UseCors("AllowFrontend");
 
+// Debug database status endpoint
+app.MapGet("/api/db-status", async (ApplicationDbContext context, ILogger<Program> logger) =>
+{
+    try
+    {
+        var status = new
+        {
+            CanConnect = await context.Database.CanConnectAsync(),
+            ConnectionString = context.Database.GetConnectionString()?.Substring(0, Math.Min(50, context.Database.GetConnectionString()?.Length ?? 0)) + "...",
+            DatabaseName = context.Database.GetDbConnection().Database,
+            Timestamp = DateTime.UtcNow
+        };
+        
+        logger.LogInformation($"Database status check: {status.CanConnect}");
+        return Results.Ok(status);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database status check failed");
+        return Results.BadRequest(new { 
+            Error = ex.Message,
+            InnerError = ex.InnerException?.Message,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+});
+
 // Manual database initialization endpoint
 app.MapPost("/api/init-db", async (ApplicationDbContext context, ILogger<Program> logger) =>
 {
