@@ -87,10 +87,10 @@ export default function CreatePostPage() {
             </div>
           </div>
         </div>
-        <div className="container py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="card">
-              <div className="card-content">
+        <div className="w-full min-h-[calc(100vh-64px)] py-8 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto w-full">
+            <div className="card w-full">
+              <div className="card-content p-6 sm:p-8 lg:p-12">
                 <div className="animate-pulse space-y-6">
                   <div className="skeleton h-6 w-1/3 rounded"></div>
                   <div className="skeleton h-12 w-full rounded"></div>
@@ -112,8 +112,8 @@ export default function CreatePostPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-lg">
           <div className="card text-center">
             <div className="card-content">
               <div className="w-16 h-16 bg-success-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -171,10 +171,10 @@ export default function CreatePostPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="card">
-            <div className="card-content">
+      <div className="w-full min-h-[calc(100vh-64px)] py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto w-full">
+          <div className="card w-full">
+            <div className="card-content p-6 sm:p-8 lg:p-12">
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Error Message */}
                 {error && (
