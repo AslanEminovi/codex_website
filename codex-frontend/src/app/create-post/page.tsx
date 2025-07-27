@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 
 export default function CreatePostPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [formData, setFormData] = useState({
@@ -21,15 +21,14 @@ export default function CreatePostPage() {
 
   useEffect(() => {
     setMounted(true)
-    // Don't redirect immediately, wait for auth to load
   }, [])
 
   useEffect(() => {
-    // Only redirect if we're sure user is not authenticated and component is mounted
-    if (mounted && !user) {
+    // Only redirect if auth is done loading, component is mounted, and user is definitely not authenticated
+    if (mounted && !authLoading && !user) {
       router.push('/login')
     }
-  }, [mounted, user, router])
+  }, [mounted, authLoading, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,7 +71,7 @@ export default function CreatePostPage() {
     setError('')
   }
 
-  if (!mounted) {
+  if (!mounted || authLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white border-b border-gray-200">
