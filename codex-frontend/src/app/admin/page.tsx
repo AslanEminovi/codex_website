@@ -34,7 +34,7 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const { user, isAdmin } = useAuth()
+  const { isAdmin } = useAuth()
   const [posts, setPosts] = useState<Post[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)

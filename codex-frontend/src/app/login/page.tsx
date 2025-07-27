@@ -49,7 +49,7 @@ export default function LoginPage() {
       } else {
         setError('Invalid username/email or password')
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
@@ -168,7 +168,7 @@ export default function LoginPage() {
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-gray-200 text-center">
               <p className="text-body text-gray-600">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-semibold text-primary-600 hover:text-primary-700">
                   Create Account
                 </Link>

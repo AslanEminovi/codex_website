@@ -58,7 +58,7 @@ export default function HomePage() {
     }
   }
 
-  const handleBlogClick = (blog: any) => {
+  const handleBlogClick = (blog: { slug?: string }) => {
     if (blog.slug) {
       window.location.href = `/blog/${blog.slug}`
     }

@@ -26,7 +26,7 @@ interface Post {
 }
 
 export default function BlogPage() {
-  const { user, isAdmin } = useAuth()
+  const { user } = useAuth()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -68,7 +68,7 @@ export default function BlogPage() {
     return matchesSearch && matchesCategory
   })
 
-  const categories = ['all', ...Array.from(new Set(posts.map(post => post.category?.slug).filter(Boolean)))]
+  const categories = ['all', ...Array.from(new Set(posts.map(post => post.category?.slug).filter((slug): slug is string => Boolean(slug))))]
 
   if (loading) {
     return (

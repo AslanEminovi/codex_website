@@ -42,7 +42,7 @@ export default function CreatePostPage() {
         title: formData.title,
         content: formData.content,
         excerpt: formData.excerpt || undefined,
-        categoryId: formData.categoryId || undefined
+        category: formData.categoryId ? { id: formData.categoryId, name: '', slug: '' } : undefined
       })
       
       if (response) {
@@ -50,9 +50,9 @@ export default function CreatePostPage() {
       } else {
         setError('Failed to create post. Please try again.')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Post creation error:', error)
-      setError(error?.message || 'Failed to create post. Please try again.')
+      setError(error instanceof Error ? error.message : 'Failed to create post. Please try again.')
     } finally {
       setLoading(false)
     }
