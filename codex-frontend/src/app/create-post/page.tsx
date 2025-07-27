@@ -1,64 +1,73 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
+import Link from 'next/link'
+import { 
+  Save, 
+  Eye, 
+  ArrowLeft, 
+  FileText, 
+  Tag, 
+  Type, 
+  AlignLeft,
+  Bold,
+  Italic,
+  List,
+  Link2,
+  Image,
+  Code,
+  Sparkles,
+  Check,
+  Home
+} from 'lucide-react'
+
+interface Category {
+  id: number
+  name: string
+  slug: string
+}
 
 export default function CreatePostPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
+  const [categories, setCategories] = useState<Category[]>([])
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     excerpt: '',
-    categoryId: 1
+    categoryId: ''
   })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    // Only redirect if auth is done loading, component is mounted, and user is definitely not authenticated
-    if (mounted && !authLoading && !user) {
-      router.push('/login')
+    if (mounted && !authLoading) {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      loadCategories()
     }
   }, [mounted, authLoading, user, router])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-
-    if (!formData.title || !formData.content) {
-      setError('Please fill in title and content')
-      setLoading(false)
-      return
-    }
-
+  const loadCategories = async () => {
     try {
-      const response = await api.createPost({
-        title: formData.title,
-        content: formData.content,
-        excerpt: formData.excerpt || undefined,
-        categoryId: formData.categoryId || undefined
-      })
-      
-      if (response) {
-        setSuccess(true)
-      } else {
-        setError('Failed to create post. Please try again.')
-      }
-    } catch (error: unknown) {
-      console.error('Post creation error:', error)
-      setError(error instanceof Error ? error.message : 'Failed to create post. Please try again.')
-    } finally {
-      setLoading(false)
+      // For now, set default categories - can be implemented when API is ready
+      setCategories([
+        { id: 1, name: 'General', slug: 'general' },
+        { id: 2, name: 'Technology', slug: 'technology' },
+        { id: 3, name: 'Design', slug: 'design' }
+      ])
+    } catch {
+      // Silent error handling
     }
   }
 
@@ -66,38 +75,85 @@ export default function CreatePostPage() {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'categoryId' ? parseInt(value) : value
+      [name]: name === 'categoryId' ? value : value
     }))
     setError('')
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    if (!formData.title.trim() || !formData.content.trim()) {
+      setError('Please fill in all required fields')
+      setLoading(false)
+      return
+    }
+
+    try {
+      await api.createPost({
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        excerpt: formData.excerpt.trim(),
+        categoryId: formData.categoryId ? Number(formData.categoryId) : undefined
+      })
+      setSuccess(true)
+    } catch {
+      setError('Failed to create post. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const insertMarkdown = (syntax: string, placeholder: string = '') => {
+    const textarea = document.querySelector('textarea[name="content"]') as HTMLTextAreaElement
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = textarea.value.substring(start, end)
+    const replacement = selectedText || placeholder
+
+    let newText = ''
+    if (syntax === 'bold') {
+      newText = `**${replacement}**`
+    } else if (syntax === 'italic') {
+      newText = `*${replacement}*`
+    } else if (syntax === 'list') {
+      newText = `\n- ${replacement}`
+    } else if (syntax === 'link') {
+      newText = `[${replacement}](url)`
+    } else if (syntax === 'image') {
+      newText = `![${replacement}](image-url)`
+    } else if (syntax === 'code') {
+      newText = `\`${replacement}\``
+    }
+
+    const newValue = textarea.value.substring(0, start) + newText + textarea.value.substring(end)
+    setFormData(prev => ({ ...prev, content: newValue }))
+
+    // Focus back to textarea
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + newText.length, start + newText.length)
+    }, 0)
+  }
+
   if (!mounted || authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-200">
-          <div className="container">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-4">
-                <Link href="/" className="text-xl font-bold text-gray-900">
-                  CodexCMS
-                </Link>
-                <div className="hidden md:block w-px h-6 bg-gray-300"></div>
-                <h1 className="hidden md:block text-gray-600">Create New Post</h1>
-              </div>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-5xl">
+          <div className="mb-8">
+            <div className="skeleton h-12 w-48 rounded mb-4"></div>
+            <div className="skeleton h-6 w-96 rounded"></div>
           </div>
-        </div>
-        <div className="w-full min-h-[calc(100vh-64px)] py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl mx-auto w-full">
-            <div className="card w-full">
-              <div className="card-content p-6 sm:p-8 lg:p-12">
-                <div className="animate-pulse space-y-6">
-                  <div className="skeleton h-6 w-1/3 rounded"></div>
-                  <div className="skeleton h-12 w-full rounded"></div>
-                  <div className="skeleton h-32 w-full rounded"></div>
-                  <div className="skeleton h-64 w-full rounded"></div>
-                  <div className="skeleton h-12 w-32 rounded"></div>
-                </div>
+          <div className="card">
+            <div className="card-content p-6 sm:p-8 lg:p-12">
+              <div className="space-y-6">
+                <div className="skeleton h-12 w-full rounded-lg"></div>
+                <div className="skeleton h-32 w-full rounded-lg"></div>
+                <div className="skeleton h-64 w-full rounded-lg"></div>
               </div>
             </div>
           </div>
@@ -106,37 +162,46 @@ export default function CreatePostPage() {
     )
   }
 
-  if (!user) {
-    return null
-  }
-
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-lg">
-          <div className="card text-center">
-            <div className="card-content">
-              <div className="w-16 h-16 bg-success-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <h2 className="text-title-lg text-gray-900 mb-4">Post Published!</h2>
-              <p className="text-body text-gray-600 mb-6">
-                Your post has been successfully published and is now live.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/blog" className="btn-primary">
-                  View All Posts
-                </Link>
-                <Link href="/create-post" className="btn-secondary">
-                  Create Another Post
-                </Link>
-              </div>
-              <div className="mt-6">
-                <Link href="/" className="text-caption text-gray-500 hover:text-gray-700">
-                  ← Back to Home
-                </Link>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/2 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+          <div className="w-full max-w-lg">
+            <div className="card text-center fade-in">
+              <div className="card-content">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Check className="w-10 h-10 text-white" />
+                </div>
+                <h2 className="text-display text-dark-900 mb-4">Post Created!</h2>
+                <p className="text-body text-dark-600 mb-8">
+                  Your post has been successfully created and published. Start sharing your amazing content with the world!
+                </p>
+                <div className="space-y-4">
+                  <Link href="/blog" className="btn-primary w-full btn-lg">
+                    <Eye className="w-5 h-5" />
+                    View All Posts
+                  </Link>
+                  <button 
+                    onClick={() => {
+                      setSuccess(false)
+                      setFormData({ title: '', content: '', excerpt: '', categoryId: '' })
+                    }}
+                    className="btn-secondary w-full"
+                  >
+                    <FileText className="w-5 h-5" />
+                    Create Another Post
+                  </button>
+                  <Link href="/" className="btn-ghost w-full">
+                    <Home className="w-5 h-5" />
+                    Back to Home
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -146,190 +211,218 @@ export default function CreatePostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="container">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="text-xl font-bold text-gray-900">
-                CodexCMS
-              </Link>
-              <div className="hidden md:block w-px h-6 bg-gray-300"></div>
-              <h1 className="hidden md:block text-gray-600">Create New Post</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/blog" className="btn-ghost btn-sm">
-                My Posts
-              </Link>
-              <Link href="/" className="btn-secondary btn-sm">
-                Cancel
-              </Link>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-gradient-to-br from-cyan-400/20 to-blue-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
-      {/* Main Content */}
-      <div className="w-full min-h-[calc(100vh-64px)] py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto w-full">
-          <div className="card w-full">
+      <div className="relative z-10 w-full min-h-[calc(100vh-64px)] py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="mb-8 fade-in">
+            <div className="flex items-center gap-4 mb-6">
+              <Link href="/blog" className="p-2 bg-white/60 backdrop-blur-sm rounded-lg border border-white/20 hover:bg-white/80 transition-all group">
+                <ArrowLeft className="w-5 h-5 text-dark-600 group-hover:-translate-x-1 transition-transform" />
+              </Link>
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-white/20 mb-2">
+                  <Sparkles className="w-4 h-4 text-brand-500" />
+                  <span className="text-sm font-medium text-dark-600">Create New Post</span>
+                </div>
+                <h1 className="text-display text-dark-900">Share Your Story</h1>
+                <p className="text-subtitle text-dark-600">Create amazing content that inspires and informs your audience</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Editor Card */}
+          <div className="card slide-in">
             <div className="card-content p-6 sm:p-8 lg:p-12">
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Error Message */}
                 {error && (
-                  <div className="alert alert-error">
+                  <div className="alert-error fade-in">
                     {error}
                   </div>
                 )}
 
-                {/* Title Section */}
-                <div className="space-y-2">
-                  <label htmlFor="title" className="form-label">
-                    Post Title
-                  </label>
-                  <input
-                    id="title"
-                    name="title"
-                    type="text"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    placeholder="Enter an engaging title for your post..."
-                    required
-                    className="form-input text-xl font-semibold"
-                    style={{ fontSize: '1.25rem', padding: '1rem 1.5rem' }}
-                  />
-                </div>
-
-                {/* Excerpt Section */}
-                <div className="space-y-2">
-                  <label htmlFor="excerpt" className="form-label">
-                    Excerpt (Optional)
-                  </label>
-                  <textarea
-                    id="excerpt"
-                    name="excerpt"
-                    value={formData.excerpt}
-                    onChange={handleInputChange}
-                    placeholder="Write a brief summary of your post..."
-                    rows={3}
-                    className="form-textarea"
-                  />
-                  <p className="text-caption">
-                    A short description that will appear in post previews and search results.
-                  </p>
-                </div>
-
-                {/* Category Section */}
-                <div className="space-y-2">
-                  <label htmlFor="categoryId" className="form-label">
-                    Category
-                  </label>
-                  <select
-                    id="categoryId"
-                    name="categoryId"
-                    value={formData.categoryId}
-                    onChange={handleInputChange}
-                    className="form-input"
-                  >
-                    <option value={1}>General</option>
-                    <option value={2}>Technology</option>
-                  </select>
-                </div>
-
-                {/* Content Section */}
-                <div className="space-y-2">
-                  <label htmlFor="content" className="form-label">
-                    Content
-                  </label>
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
-                    {/* Toolbar */}
-                    <div className="bg-gray-50 border-b border-gray-200 p-3">
-                      <div className="flex items-center gap-2 text-caption text-gray-600">
-                        <span>💡 Tip:</span>
-                        <span>Use Markdown syntax for formatting</span>
-                        <div className="ml-auto flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <strong>**bold**</strong>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <em>*italic*</em>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            # Heading
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Editor */}
-                    <textarea
-                      id="content"
-                      name="content"
-                      value={formData.content}
+                {/* Title & Meta */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <label htmlFor="title" className="form-label flex items-center gap-2">
+                      <Type className="w-4 h-4" />
+                      Post Title *
+                    </label>
+                    <input
+                      id="title"
+                      name="title"
+                      type="text"
+                      value={formData.title}
                       onChange={handleInputChange}
-                      placeholder="Start writing your post here...
-
-You can use Markdown formatting:
-
-# This is a heading
-## This is a subheading
-
-**This text is bold**
-*This text is italic*
-
-- Bullet point 1
-- Bullet point 2
-
-[Link text](https://example.com)
-
-> This is a quote
-
-```
-Code block
-```"
+                      placeholder="Enter an engaging title for your post..."
                       required
-                      className="w-full border-0 focus:ring-0 p-6 min-h-96 resize-none font-mono text-gray-800"
-                      style={{ 
-                        outline: 'none',
-                        boxShadow: 'none',
-                        minHeight: '400px',
-                        fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-                      }}
+                      className="form-input text-lg font-medium"
                     />
                   </div>
-                  <p className="text-caption">
-                    Write your content using Markdown for rich formatting. The editor supports headings, links, lists, code blocks, and more.
-                  </p>
+                  <div>
+                    <label htmlFor="categoryId" className="form-label flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      Category
+                    </label>
+                    <select
+                      id="categoryId"
+                      name="categoryId"
+                      value={formData.categoryId}
+                      onChange={handleInputChange}
+                      className="form-select"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(category => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Excerpt */}
+                <div>
+                  <label htmlFor="excerpt" className="form-label flex items-center gap-2">
+                    <AlignLeft className="w-4 h-4" />
+                    Excerpt
+                  </label>
+                  <input
+                    id="excerpt"
+                    name="excerpt"
+                    type="text"
+                    value={formData.excerpt}
+                    onChange={handleInputChange}
+                    placeholder="Brief description of your post (optional)"
+                    className="form-input"
+                  />
+                  <p className="text-xs text-dark-500 mt-1">A short summary that appears in post previews</p>
+                </div>
+
+                {/* Content Editor */}
+                <div>
+                  <label htmlFor="content" className="form-label flex items-center gap-2 mb-4">
+                    <FileText className="w-4 h-4" />
+                    Content *
+                  </label>
+
+                  {/* Toolbar */}
+                  <div className="glass rounded-xl p-3 mb-4">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-dark-600 mr-3">Format:</span>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('bold', 'bold text')}
+                        className="p-2 hover:bg-white/60 rounded-lg transition-colors group"
+                        title="Bold"
+                      >
+                        <Bold className="w-4 h-4 text-dark-600 group-hover:text-dark-900" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('italic', 'italic text')}
+                        className="p-2 hover:bg-white/60 rounded-lg transition-colors group"
+                        title="Italic"
+                      >
+                        <Italic className="w-4 h-4 text-dark-600 group-hover:text-dark-900" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('list', 'list item')}
+                        className="p-2 hover:bg-white/60 rounded-lg transition-colors group"
+                        title="List"
+                      >
+                        <List className="w-4 h-4 text-dark-600 group-hover:text-dark-900" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('link', 'link text')}
+                        className="p-2 hover:bg-white/60 rounded-lg transition-colors group"
+                        title="Link"
+                      >
+                        <Link2 className="w-4 h-4 text-dark-600 group-hover:text-dark-900" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('image', 'alt text')}
+                        className="p-2 hover:bg-white/60 rounded-lg transition-colors group"
+                        title="Image"
+                      >
+                        <Image className="w-4 h-4 text-dark-600 group-hover:text-dark-900" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('code', 'code')}
+                        className="p-2 hover:bg-white/60 rounded-lg transition-colors group"
+                        title="Code"
+                      >
+                        <Code className="w-4 h-4 text-dark-600 group-hover:text-dark-900" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <textarea
+                    id="content"
+                    name="content"
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    placeholder="Start writing your amazing content here..."
+                    required
+                    rows={20}
+                    className="form-textarea text-base leading-relaxed"
+                    style={{ minHeight: '400px' }}
+                  />
+
+                  {/* Markdown Tips */}
+                  <div className="mt-4 p-4 bg-brand-50 rounded-xl border border-brand-200">
+                    <h4 className="text-sm font-semibold text-brand-800 mb-2">💡 Markdown Tips:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-brand-700">
+                      <div><code>**bold**</code> for <strong>bold text</strong></div>
+                      <div><code>*italic*</code> for <em>italic text</em></div>
+                      <div><code>- item</code> for bullet lists</div>
+                      <div><code>[text](url)</code> for links</div>
+                      <div><code>`code`</code> for inline code</div>
+                                             <div><code>![alt](url)</code> for images</div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-success-500 rounded-full"></div>
-                      <span className="text-caption text-gray-600">Auto-saved as draft</span>
-                    </div>
-                  </div>
+                <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-dark-200">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-primary btn-lg w-full sm:w-auto relative overflow-hidden group"
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                        <span>Publishing...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <Save className="w-5 h-5" />
+                        <span>Publish Post</span>
+                      </div>
+                    )}
+                  </button>
                   
-                  <div className="flex items-center gap-3">
-                    <Link href="/" className="btn-ghost">
-                      Cancel
-                    </Link>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="btn-primary"
-                    >
-                      {loading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Publishing...
-                        </div>
-                      ) : (
-                        'Publish Post'
-                      )}
-                    </button>
+                  <Link href="/blog" className="btn-secondary w-full sm:w-auto">
+                    Cancel
+                  </Link>
+
+                  <div className="flex-1" />
+
+                  <div className="text-sm text-dark-500">
+                    Auto-saved • {new Date().toLocaleTimeString()}
                   </div>
                 </div>
               </form>
