@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const currentUser = await api.getCurrentUser()
       setUser(currentUser)
-    } catch (error) {
+    } catch {
       // If token is invalid, clear it silently
       localStorage.removeItem('token')
       api.setToken(null)
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       return false
-    } catch (error) {
+    } catch {
       return false
     }
   }
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       return false
-    } catch (error) {
+    } catch {
       return false
     }
   }

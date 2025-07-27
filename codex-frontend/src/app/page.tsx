@@ -51,7 +51,7 @@ export default function HomePage() {
         }))
         setPosts(convertedPosts.slice(0, 6)) // Show only 6 posts
       }
-    } catch (error) {
+    } catch {
       // Silently handle error - posts will remain empty array
     } finally {
       setLoading(false)

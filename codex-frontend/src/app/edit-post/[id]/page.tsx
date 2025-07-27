@@ -12,6 +12,7 @@ interface UpdatePostData {
   excerpt: string
   featuredImageUrl: string
   status: string
+  categoryId: string
   tags: string[]
 }
 
@@ -86,6 +87,7 @@ export default function EditPostPage() {
         excerpt: formData.excerpt || formData.content.substring(0, 200) + '...',
         featuredImageUrl: formData.featuredImageUrl || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&q=80',
         status: formData.status,
+        categoryId: formData.categoryId,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       }
 
@@ -93,7 +95,7 @@ export default function EditPostPage() {
           title: postData.title,
           content: postData.content,
           excerpt: postData.excerpt,
-          categoryId: postData.categoryId
+          categoryId: postData.categoryId ? Number(postData.categoryId) : undefined
         })
       setSuccess(true)
       

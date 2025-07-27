@@ -54,7 +54,7 @@ export default function BlogPage() {
         }))
         setPosts(convertedPosts)
       }
-    } catch (error) {
+    } catch {
       // Silently handle error - posts will remain empty array
     } finally {
       setLoading(false)

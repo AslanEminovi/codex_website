@@ -86,7 +86,7 @@ export default function AdminDashboard() {
           totalViews: mappedPosts.reduce((sum, p) => sum + p.views, 0)
         }))
       }
-    } catch (error) {
+    } catch {
       // Silently handle error - posts will remain empty array
       // Show empty if API fails
       setPosts([])
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
           totalUsers: userData.length
         }))
       }
-    } catch (error) {
+    } catch {
       // Silently handle error - users will remain empty array
     }
   }
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         loadUsers() // Refresh users list
       }
-    } catch (error) {
+    } catch {
       // Silently handle error
     }
   }

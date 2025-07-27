@@ -22,7 +22,7 @@ export default function BlogPostPage() {
     try {
       const fetchedPost = await api.getPostBySlug(slug);
       setPost(fetchedPost);
-    } catch (error) {
+    } catch {
       setError('Post not found');
     } finally {
       setLoading(false);

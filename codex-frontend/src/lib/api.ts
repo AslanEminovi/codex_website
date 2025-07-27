@@ -39,6 +39,13 @@ export interface CreatePostRequest {
   categoryId?: number
 }
 
+export interface UpdatePostRequest {
+  title?: string
+  content?: string
+  excerpt?: string
+  categoryId?: number
+}
+
 export interface ApiResponse<T> {
   data: T
   pagination?: {
@@ -213,7 +220,7 @@ class ApiClient {
     })
   }
 
-  async updatePost(id: number, postData: Partial<Post>): Promise<{ success: boolean; data: { id: number; slug: string } }> {
+  async updatePost(id: number, postData: UpdatePostRequest): Promise<{ success: boolean; data: { id: number; slug: string } }> {
     return this.request(`/posts/${id}`, {
       method: 'PUT',
       body: JSON.stringify(postData),
