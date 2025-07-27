@@ -25,7 +25,7 @@ namespace CodexCMS.API.Controllers
                 var posts = await _context.Posts
                     .Include(p => p.Author)
                     .Include(p => p.Category)
-                    .Where(p => p.Status == PostStatus.Published)
+                    .Where(p => p.Status == PostStatus.Published || p.Status == PostStatus.Draft)
                     .OrderByDescending(p => p.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -44,7 +44,7 @@ namespace CodexCMS.API.Controllers
                     })
                     .ToListAsync();
 
-                var totalPosts = await _context.Posts.CountAsync(p => p.Status == PostStatus.Published);
+                var totalPosts = await _context.Posts.CountAsync(p => p.Status == PostStatus.Published || p.Status == PostStatus.Draft);
 
                 return Ok(new
                 {
