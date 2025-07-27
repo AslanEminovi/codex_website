@@ -8,12 +8,6 @@ using CodexCMS.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using CodexCMS.Core.Models;
 
-// Request DTOs
-public record LoginRequest(string Email, string Password);
-public record RegisterRequest(string Username, string Email, string Password, string FirstName, string LastName);
-public record CreatePostRequest(string Title, string Content, string? Excerpt, int? CategoryId);
-public record UpdateUserRoleRequest(UserRole Role);
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure port for Railway deployment
@@ -606,3 +600,9 @@ app.MapDelete("/admin/users/{id}", async (int id, ApplicationDbContext context) 
 });
 
 app.Run();
+
+// Request DTOs
+public record LoginRequest(string Email, string Password);
+public record RegisterRequest(string Username, string Email, string Password, string FirstName, string LastName);
+public record CreatePostRequest(string Title, string Content, string? Excerpt, int? CategoryId);
+public record UpdateUserRoleRequest(UserRole Role);
