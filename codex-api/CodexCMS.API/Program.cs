@@ -157,7 +157,64 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
+// Build the app
 var app = builder.Build();
+
+// Initialize database on startup
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        logger.LogInformation("🔄 Ensuring database is created...");
+        await context.Database.EnsureCreatedAsync();
+        logger.LogInformation("✅ Database ensured");
+        
+        // Seed basic data if tables are empty
+        if (!await context.Categories.AnyAsync())
+        {
+            logger.LogInformation("🌱 Seeding basic categories...");
+            var generalCategory = new Category
+            {
+                Name = "General",
+                Slug = "general",
+                Description = "General posts",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            context.Categories.Add(generalCategory);
+            await context.SaveChangesAsync();
+            logger.LogInformation("✅ Categories seeded");
+        }
+        
+        // Create admin user if doesn't exist
+        if (!await context.Users.AnyAsync(u => u.Email == "eminoviaslan@gmail.com"))
+        {
+            logger.LogInformation("🌱 Creating admin user...");
+            var adminUser = new User
+            {
+                Username = "admin",
+                Email = "eminoviaslan@gmail.com",
+                FirstName = "Aslan",
+                LastName = "Eminovi",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                Role = UserRole.Admin,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.Users.Add(adminUser);
+            await context.SaveChangesAsync();
+            logger.LogInformation("✅ Admin user created");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ Database initialization failed: {Message}", ex.Message);
+    }
+}
 
 // Always enable Swagger for debugging
 app.UseSwagger();
