@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 
 export default function RegisterPage() {
+  const { register } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
@@ -18,9 +18,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-
-  const router = useRouter()
-  const { register } = useAuth()
 
   useEffect(() => {
     setMounted(true)
