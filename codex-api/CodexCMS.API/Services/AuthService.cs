@@ -122,7 +122,29 @@ namespace CodexCMS.API.Services
 
         public string GenerateJwtToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found")));
+            // Use the same JWT key logic as Program.cs
+            var jwtKeyString = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
+                               _configuration["Jwt:Key"] ?? 
+                               "YourDefaultSecretKeyForDevelopmentOnlyMustBeAtLeast32CharactersLongToMeet256BitRequirement123456789";
+
+            // Handle base64 encoded keys properly
+            byte[] jwtKeyBytes;
+            try 
+            {
+                // Try to decode as base64 first
+                jwtKeyBytes = Convert.FromBase64String(jwtKeyString);
+            }
+            catch 
+            {
+                // If not base64, use as string but ensure minimum length
+                if (jwtKeyString.Length < 32)
+                {
+                    jwtKeyString = "YourDefaultSecretKeyForDevelopmentOnlyMustBeAtLeast32CharactersLongToMeet256BitRequirement123456789";
+                }
+                jwtKeyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKeyString);
+            }
+
+            var key = new SymmetricSecurityKey(jwtKeyBytes);
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
@@ -134,10 +156,8 @@ namespace CodexCMS.API.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpiryInMinutes"])),
+                expires: DateTime.UtcNow.AddMinutes(30), // 30 minutes default
                 signingCredentials: credentials
             );
 
