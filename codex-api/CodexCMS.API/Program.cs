@@ -75,24 +75,39 @@ catch (Exception ex)
 }
 
 // JWT Configuration
-var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
-             builder.Configuration["Jwt:Key"] ?? 
-             "YourDefaultSecretKeyForDevelopmentOnlyMustBeAtLeast32CharactersLongToMeet256BitRequirement123456789";
+var jwtKeyString = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
+                   builder.Configuration["Jwt:Key"] ?? 
+                   "YourDefaultSecretKeyForDevelopmentOnlyMustBeAtLeast32CharactersLongToMeet256BitRequirement123456789";
 
-Console.WriteLine($"🔑 JWT Key length: {jwtKey.Length} characters ({jwtKey.Length * 8} bits)");
+// Handle base64 encoded keys properly
+byte[] jwtKeyBytes;
+try 
+{
+    // Try to decode as base64 first
+    jwtKeyBytes = Convert.FromBase64String(jwtKeyString);
+    Console.WriteLine($"🔑 Using base64 decoded JWT key: {jwtKeyBytes.Length * 8} bits");
+}
+catch 
+{
+    // If not base64, use as string but ensure minimum length
+    if (jwtKeyString.Length < 32)
+    {
+        jwtKeyString = "YourDefaultSecretKeyForDevelopmentOnlyMustBeAtLeast32CharactersLongToMeet256BitRequirement123456789";
+    }
+    jwtKeyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKeyString);
+    Console.WriteLine($"🔑 Using string JWT key: {jwtKeyBytes.Length * 8} bits");
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+            IssuerSigningKey = new SymmetricSecurityKey(jwtKeyBytes),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
         };
     });
 
