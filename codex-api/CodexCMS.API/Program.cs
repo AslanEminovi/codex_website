@@ -227,6 +227,68 @@ app.UseSwaggerUI(c =>
 // Enable CORS
 app.UseCors("AllowFrontend");
 
+// Manual database initialization endpoint
+app.MapPost("/api/init-db", async (ApplicationDbContext context, ILogger<Program> logger) =>
+{
+    try
+    {
+        logger.LogInformation("🔄 Manual database initialization started...");
+        
+        // Force database creation
+        var created = await context.Database.EnsureCreatedAsync();
+        logger.LogInformation($"Database creation result: {created}");
+        
+        // Check if Categories table exists and seed
+        if (!await context.Categories.AnyAsync())
+        {
+            logger.LogInformation("🌱 Seeding categories...");
+            var categories = new[]
+            {
+                new Category { Name = "General", Slug = "general", Description = "General posts", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new Category { Name = "Technology", Slug = "technology", Description = "Technology posts", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+            };
+            context.Categories.AddRange(categories);
+            await context.SaveChangesAsync();
+            logger.LogInformation("✅ Categories seeded");
+        }
+        
+        // Check if admin user exists and create
+        if (!await context.Users.AnyAsync(u => u.Email == "eminoviaslan@gmail.com"))
+        {
+            logger.LogInformation("🌱 Creating admin user...");
+            var adminUser = new User
+            {
+                Username = "admin",
+                Email = "eminoviaslan@gmail.com",
+                FirstName = "Aslan",
+                LastName = "Eminovi",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                Role = UserRole.Admin,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.Users.Add(adminUser);
+            await context.SaveChangesAsync();
+            logger.LogInformation("✅ Admin user created");
+        }
+        
+        return Results.Ok(new { 
+            message = "Database initialized successfully",
+            tablesCreated = created,
+            timestamp = DateTime.UtcNow
+        });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ Database initialization failed");
+        return Results.BadRequest(new { 
+            error = ex.Message,
+            innerError = ex.InnerException?.Message,
+            timestamp = DateTime.UtcNow
+        });
+    }
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
