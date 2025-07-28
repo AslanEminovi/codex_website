@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 import { Navigation } from '@/components/navigation'
-import { Search, Filter, Eye, Calendar, User, BookOpen, Tag, TrendingUp, Clock, ArrowRight } from 'lucide-react'
+import { Search, Filter, Eye, Calendar, User, BookOpen, Tag, TrendingUp, Clock, ArrowRight, Sparkles, Edit3, Heart, Share2, Bookmark, Star } from 'lucide-react'
 
 interface Post {
   id: number
@@ -31,6 +31,8 @@ export default function BlogPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'oldest'>('latest')
+  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     loadPosts()
@@ -60,6 +62,17 @@ export default function BlogPage() {
     return matchesSearch && matchesCategory
   })
 
+  const sortedPosts = [...filteredPosts].sort((a, b) => {
+    switch (sortBy) {
+      case 'popular':
+        return (b.viewCount || 0) - (a.viewCount || 0)
+      case 'oldest':
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      default:
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    }
+  })
+
   const categories = Array.from(
     new Set(posts.map(post => post.category?.name).filter((name): name is string => Boolean(name)))
   )
@@ -83,33 +96,48 @@ export default function BlogPage() {
     return `${readTime} min read`
   }
 
+  const toggleLike = (postId: number) => {
+    setLikedPosts(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(postId)) {
+        newSet.delete(postId)
+      } else {
+        newSet.add(postId)
+      }
+      return newSet
+    })
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        {/* Modern Background Pattern */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.03),transparent_30%),radial-gradient(circle_at_70%_80%,rgba(255,119,198,0.03),transparent_30%),radial-gradient(circle_at_90%_10%,rgba(120,200,255,0.03),transparent_30%)]"></div>
+        </div>
+
         <Navigation />
-        <div className="container py-16">
-          {/* Header Skeleton */}
-          <div className="text-center mb-16">
-            <div className="skeleton h-12 w-64 mx-auto rounded mb-4"></div>
-            <div className="skeleton h-6 w-96 mx-auto rounded mb-8"></div>
-            <div className="skeleton h-12 w-80 mx-auto rounded"></div>
-          </div>
-          
-          {/* Posts Grid Skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="card">
-                <div className="card-content">
-                  <div className="skeleton h-6 w-20 rounded mb-4"></div>
-                  <div className="skeleton h-8 w-full rounded mb-3"></div>
-                  <div className="skeleton h-20 w-full rounded mb-4"></div>
-                  <div className="flex items-center gap-3">
-                    <div className="skeleton h-8 w-8 rounded-full"></div>
-                    <div className="skeleton h-4 w-24 rounded"></div>
-                  </div>
-                </div>
+        
+        <div className="relative z-10 pt-24 pb-40">
+          <div className="container mx-auto px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+              {/* Header Skeleton */}
+              <div className="text-center mb-24">
+                <div className="skeleton h-6 w-48 mx-auto rounded-full mb-8"></div>
+                <div className="skeleton h-16 w-96 mx-auto rounded-xl mb-6"></div>
+                <div className="skeleton h-6 w-128 mx-auto rounded-lg mb-16"></div>
+                <div className="skeleton h-16 w-full max-w-4xl mx-auto rounded-2xl"></div>
               </div>
-            ))}
+              
+              {/* Posts Grid Skeleton */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-slate-200 rounded-3xl h-80"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -117,238 +145,362 @@ export default function BlogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
-      {/* Animated Background Elements */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      {/* Enhanced Modern Background Pattern */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-gradient-to-br from-cyan-400/20 to-blue-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.03),transparent_30%),radial-gradient(circle_at_70%_80%,rgba(255,119,198,0.03),transparent_30%),radial-gradient(circle_at_90%_10%,rgba(120,200,255,0.03),transparent_30%)]"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-purple-200/20 to-pink-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-cyan-200/15 to-blue-200/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
       <Navigation />
 
-      {/* Hero Section */}
-      <section className="section relative z-10">
-        <div className="container">
-          <div className="text-center mb-16 fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-white/20 mb-6">
-              <BookOpen className="w-4 h-4 text-brand-500" />
-              <span className="text-sm font-medium text-dark-600">Discover Amazing Content</span>
-            </div>
-            
-            <h1 className="text-hero mb-6">
-              Explore Our
-              <br />
-              <span className="text-accent-500">Blog Posts</span>
-            </h1>
-            
-            <p className="text-subtitle max-w-2xl mx-auto mb-12">
-              Discover insights, tutorials, and stories from our community of creators
-            </p>
+      {/* Enhanced Hero Section */}
+      <section className="relative z-10 pt-24 pb-32">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-full mb-10 hover:shadow-lg transition-all duration-300 group">
+                <BookOpen className="w-4 h-4 text-blue-600 group-hover:rotate-12 transition-transform" />
+                <span className="text-sm font-semibold text-blue-900">Discover Amazing Stories</span>
+                <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+              </div>
+              
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-10 leading-none">
+                <span className="block text-slate-900">Explore Our</span>
+                <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-pulse">Blog Posts</span>
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-slate-600 max-w-3xl mx-auto mb-16 leading-relaxed">
+                Discover insights, tutorials, and stories from our community of passionate creators and thought leaders.
+              </p>
 
-            {/* Search and Filter */}
-            <div className="max-w-4xl mx-auto">
-              <div className="glass rounded-2xl p-6 mb-8">
-                <div className="flex flex-col lg:flex-row gap-4">
-                  {/* Search Input */}
-                  <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
-                    <input
-                      type="text"
-                      placeholder="Search posts..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 bg-white/80 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                    />
-                  </div>
+              {/* Enhanced Search and Filter */}
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-white/80 backdrop-blur-lg border border-slate-200 rounded-3xl p-10 mb-12 shadow-xl">
+                  <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Search Input */}
+                    <div className="relative flex-1">
+                      <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search for amazing content..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-slate-800 placeholder-slate-500"
+                      />
+                    </div>
 
-                  {/* Category Filter */}
-                  <div className="relative">
-                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="pl-12 pr-8 py-3 bg-white/80 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all appearance-none min-w-[180px]"
-                    >
-                      <option value="">All Categories</option>
-                      {categories.map(category => (
-                        <option key={category} value={category.toLowerCase().replace(/\s+/g, '-')}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
+                    {/* Category Filter */}
+                    <div className="relative">
+                      <Filter className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="pl-14 pr-10 py-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none min-w-[200px] text-slate-800"
+                      >
+                        <option value="">All Categories</option>
+                        {categories.map(category => (
+                          <option key={category} value={category.toLowerCase().replace(/\s+/g, '-')}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Sort Dropdown */}
+                    <div className="relative">
+                      <TrendingUp className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as 'latest' | 'popular' | 'oldest')}
+                        className="pl-14 pr-10 py-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none min-w-[180px] text-slate-800"
+                      >
+                        <option value="latest">Latest</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="oldest">Oldest</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Category Pills */}
-              {categories.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-3 mb-12">
-                  <button
-                    onClick={() => setSelectedCategory('')}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      !selectedCategory 
-                        ? 'bg-gradient-brand text-white shadow-lg' 
-                        : 'bg-white/60 text-dark-600 hover:bg-white/80'
-                    }`}
-                  >
-                    All Posts
-                  </button>
-                  {categories.map(category => (
+                {/* Enhanced Category Pills */}
+                {categories.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-4 mb-16">
                     <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category.toLowerCase().replace(/\s+/g, '-'))}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        selectedCategory === category.toLowerCase().replace(/\s+/g, '-')
-                          ? 'bg-gradient-brand text-white shadow-lg'
-                          : 'bg-white/60 text-dark-600 hover:bg-white/80'
+                      onClick={() => setSelectedCategory('')}
+                      className={`px-6 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 group ${
+                        !selectedCategory 
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl' 
+                          : 'bg-white/60 text-slate-700 hover:bg-white/80 hover:shadow-md'
                       }`}
                     >
-                      <Tag className="w-3 h-3 inline mr-1" />
-                      {category}
+                      <span className="group-hover:scale-105 transition-transform">All Posts</span>
                     </button>
-                  ))}
-                </div>
-              )}
+                    {categories.map(category => (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category.toLowerCase().replace(/\s+/g, '-'))}
+                        className={`px-6 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 group ${
+                          selectedCategory === category.toLowerCase().replace(/\s+/g, '-')
+                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl'
+                            : 'bg-white/60 text-slate-700 hover:bg-white/80 hover:shadow-md'
+                        }`}
+                      >
+                        <Tag className="w-3 h-3 inline mr-2 group-hover:scale-110 transition-transform" />
+                        <span className="group-hover:scale-105 transition-transform">{category}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Posts Grid */}
-      <section className="section-sm relative z-10">
-        <div className="container">
-          {filteredPosts.length > 0 ? (
-            <>
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-title text-dark-900">
-                    {searchTerm || selectedCategory ? 'Search Results' : 'Latest Posts'}
-                  </h2>
-                  <p className="text-body text-dark-600">
-                    {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found
-                  </p>
-                </div>
-                
-                {!searchTerm && !selectedCategory && (
-                  <div className="flex items-center gap-2 text-dark-500">
-                    <TrendingUp className="w-4 h-4" />
-                    <span className="text-sm">Trending</span>
+      {/* Enhanced Posts Grid Section */}
+      <section className="relative z-10 pb-40">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            {sortedPosts.length > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-20">
+                  <div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
+                      {searchTerm || selectedCategory ? 'Search Results' : 'Latest Stories'}
+                    </h2>
+                    <p className="text-lg text-slate-600">
+                      {sortedPosts.length} {sortedPosts.length === 1 ? 'story' : 'stories'} found
+                    </p>
                   </div>
-                )}
-              </div>
+                  
+                  {!searchTerm && !selectedCategory && (
+                    <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-2xl">
+                      <TrendingUp className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-semibold text-blue-900">Trending Now</span>
+                    </div>
+                  )}
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredPosts.map((post) => (
-                  <Link key={post.id} href={`/blog/${post.slug}`} className="group">
-                    <article className="card h-full slide-in">
-                      <div className="card-content">
-                        {/* Category Badge */}
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="px-3 py-1 bg-gradient-brand text-white text-xs font-medium rounded-full">
-                            {post.category?.name || 'General'}
-                          </span>
-                          <div className="flex items-center gap-1 text-dark-400">
-                            <Eye className="w-3 h-3" />
-                            <span className="text-xs">{post.viewCount || 0}</span>
+                {/* Enhanced Featured Post (First Post) */}
+                {sortedPosts.length > 0 && !searchTerm && !selectedCategory && (
+                  <div className="mb-20">
+                    <Link href={`/blog/${sortedPosts[0].slug}`} className="group block">
+                      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-2xl hover:border-slate-300 transition-all duration-500 hover:-translate-y-1 relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative z-10 p-12">
+                          <div className="flex items-center gap-3 mb-8">
+                            <span className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold rounded-full">
+                              Featured
+                            </span>
+                            <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900 text-sm font-semibold rounded-full">
+                              {sortedPosts[0].category?.name || 'General'}
+                            </span>
                           </div>
-                        </div>
-                        
-                        {/* Title */}
-                        <h3 className="text-title mb-3 group-hover:text-brand-600 transition-colors line-clamp-2">
-                          {post.title}
-                        </h3>
-                        
-                        {/* Excerpt */}
-                        <p className="text-body mb-6 line-clamp-3">
-                          {post.excerpt || post.content.substring(0, 150) + '...'}
-                        </p>
-                        
-                        {/* Meta */}
-                        <div className="flex items-center justify-between pt-4 border-t border-dark-100">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-brand rounded-full flex items-center justify-center">
-                              <User className="w-4 h-4 text-white" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-dark-700">
-                                {getAuthorName(post.author)}
-                              </p>
-                              <div className="flex items-center gap-3 text-xs text-dark-500">
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  <span>{formatDate(post.createdAt)}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  <span>{getReadTime(post.content)}</span>
+                          
+                          <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 group-hover:text-blue-600 transition-colors">
+                            {sortedPosts[0].title}
+                          </h3>
+                          
+                          <p className="text-xl text-slate-600 mb-10 leading-relaxed">
+                            {sortedPosts[0].excerpt || sortedPosts[0].content.substring(0, 200) + '...'}
+                          </p>
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                                <User className="w-6 h-6 text-white" />
+                              </div>
+                              <div>
+                                <p className="text-lg font-semibold text-slate-900">
+                                  {getAuthorName(sortedPosts[0].author)}
+                                </p>
+                                <div className="flex items-center gap-4 text-slate-500">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>{formatDate(sortedPosts[0].createdAt)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4" />
+                                    <span>{getReadTime(sortedPosts[0].content)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Eye className="w-4 h-4" />
+                                    <span>{sortedPosts[0].viewCount}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
+                            
+                            <ArrowRight className="w-6 h-6 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-2 transition-all" />
                           </div>
-                          
-                          <ArrowRight className="w-4 h-4 text-dark-400 group-hover:text-brand-600 group-hover:translate-x-1 transition-all" />
                         </div>
                       </div>
-                    </article>
-                  </Link>
-                ))}
-              </div>
+                    </Link>
+                  </div>
+                )}
 
-              {/* Load More Button */}
-              <div className="text-center mt-16">
-                <button className="btn-secondary btn-lg">
-                  Load More Posts
-                  <ArrowRight className="w-5 h-5" />
-                </button>
+                {/* Enhanced Posts Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                  {(sortedPosts.slice(searchTerm || selectedCategory ? 0 : 1)).map((post) => (
+                    <Link key={post.id} href={`/blog/${post.slug}`} className="group">
+                      <article className="bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-2xl hover:border-slate-300 transition-all duration-500 hover:-translate-y-2 h-full relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative z-10 p-10">
+                          {/* Category and Views */}
+                          <div className="flex items-center gap-3 mb-6">
+                            <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900 text-sm font-semibold rounded-full">
+                              {post.category?.name || 'General'}
+                            </span>
+                            <div className="flex items-center gap-1 text-slate-500">
+                              <Eye className="w-3 h-3" />
+                              <span className="text-sm">{post.viewCount || 0}</span>
+                            </div>
+                          </div>
+                          
+                          {/* Title */}
+                          <h3 className="text-xl font-bold text-slate-900 mb-4 group-hover:text-blue-600 transition-colors line-clamp-2">
+                            {post.title}
+                          </h3>
+                          
+                          {/* Excerpt */}
+                          <p className="text-slate-600 mb-8 line-clamp-3 leading-relaxed">
+                            {post.excerpt || post.content.substring(0, 120) + '...'}
+                          </p>
+                          
+                          {/* Meta */}
+                          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                                <User className="w-5 h-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-slate-900">
+                                  {getAuthorName(post.author)}
+                                </p>
+                                <div className="flex items-center gap-3 text-xs text-slate-500">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>{formatDate(post.createdAt)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{getReadTime(post.content)}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                          </div>
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Enhanced Load More Button */}
+                <div className="text-center mt-20">
+                  <button className="group px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 font-semibold rounded-2xl hover:border-slate-300 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-50 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span className="relative flex items-center gap-2">
+                      Load More Stories
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-24">
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-10">
+                  <BookOpen className="w-12 h-12 text-blue-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">No Stories Found</h3>
+                <p className="text-slate-600 mb-10 max-w-md mx-auto">
+                  {searchTerm || selectedCategory 
+                    ? "Try adjusting your search criteria or explore different categories to discover amazing content."
+                    : "No stories have been published yet. Be the first to share your amazing content!"
+                  }
+                </p>
+                {user && (
+                  <Link 
+                    href="/create-post" 
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-2xl hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <Edit3 className="w-5 h-5" />
+                    Create Your First Story
+                  </Link>
+                )}
               </div>
-            </>
-          ) : (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gradient-brand rounded-full flex items-center justify-center mx-auto mb-6 opacity-50">
-                <BookOpen className="w-12 h-12 text-white" />
-              </div>
-              <h3 className="text-title mb-3">No Posts Found</h3>
-              <p className="text-body mb-6">
-                {searchTerm || selectedCategory 
-                  ? "Try adjusting your search or filter criteria"
-                  : "No posts have been published yet. Be the first to create content!"
-                }
-              </p>
-              {user && (
-                <Link href="/create-post" className="btn-primary">
-                  Create Your First Post
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Enhanced CTA Section */}
       {!user && (
-        <section className="section bg-gradient-hero relative z-10">
-          <div className="container">
-            <div className="max-w-3xl mx-auto text-center text-white">
-              <h2 className="text-display mb-6">Ready to Share Your Story?</h2>
-              <p className="text-subtitle mb-8 opacity-90">
-                Join our community of creators and start publishing your own amazing content.
+        <section className="relative z-10 py-40 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_30%),radial-gradient(circle_at_70%_80%,rgba(255,119,198,0.1),transparent_30%)]"></div>
+          <div className="container mx-auto px-6 lg:px-8 relative z-10">
+            <div className="max-w-4xl mx-auto text-center text-white">
+              <h2 className="text-4xl md:text-5xl font-bold mb-8">
+                Ready to Share Your
+                <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Amazing Story?</span>
+              </h2>
+              <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
+                Join our community of passionate writers and start sharing your unique perspective with the world.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/register" className="btn-secondary btn-lg">
-                  <User className="w-5 h-5" />
-                  Get Started Free
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link 
+                  href="/register" 
+                  className="group px-8 py-4 bg-white text-slate-900 font-semibold rounded-2xl hover:bg-slate-100 transition-colors relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="relative flex items-center gap-2">
+                    <Sparkles className="w-5 h-5" />
+                    Get Started Free
+                  </span>
                 </Link>
-                <Link href="/login" className="btn-ghost btn-lg border-white/20 text-white hover:bg-white/10">
-                  <ArrowRight className="w-5 h-5" />
-                  Sign In
+                <Link 
+                  href="/login" 
+                  className="group px-8 py-4 border-2 border-white/20 text-white font-semibold rounded-2xl hover:bg-white/10 transition-all relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="relative flex items-center gap-2">
+                    <ArrowRight className="w-5 h-5" />
+                    Sign In
+                  </span>
                 </Link>
               </div>
             </div>
           </div>
         </section>
       )}
+
+      {/* Enhanced Footer */}
+      <footer className="relative z-10 py-20 bg-slate-50 border-t border-slate-200">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center">
+              <Link href="/" className="inline-flex items-center gap-3 mb-8 group">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold text-slate-900">CodexCMS</span>
+              </Link>
+              <p className="text-slate-600 mb-10">Beautiful content management made simple.</p>
+              <div className="flex items-center justify-center gap-8 text-slate-600">
+                <Link href="/blog" className="hover:text-slate-900 transition-colors">Blog</Link>
+                <Link href="/about" className="hover:text-slate-900 transition-colors">About</Link>
+                <Link href="/contact" className="hover:text-slate-900 transition-colors">Contact</Link>
+                <Link href="/privacy" className="hover:text-slate-900 transition-colors">Privacy</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 } 
